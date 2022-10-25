@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 const { Schema } = mongoose.Schema;
 const User = mongoose.model("User", userSchema);
 const Category = mongoose.model("Category", categorySchema);
+const Comment = mongoose.model("Comment", commentSchema);
 
 // Define a schema
 const soundSchema = new Schema({
@@ -21,6 +22,7 @@ const soundSchema = new Schema({
   },
   sound: { type: Buffer, required: true },
   category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+  comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
   date: { type: Date, default: Date.now }, // Default value is now
 });
 
