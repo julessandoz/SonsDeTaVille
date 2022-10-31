@@ -49,4 +49,4 @@ function isLongitude(value) {
 }
 
 // Create the model from the schema and export it
-export default mongoose.model("Sound", soundSchema);
+export default mongoose.models.Sound || mongoose.model("Sound", soundSchema);
