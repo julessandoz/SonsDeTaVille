@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-const { Schema } = mongoose.Schema;
+const Schema = mongoose.Schema;
 
 // Define a schema
 const soundSchema = new Schema({
@@ -15,7 +15,6 @@ const soundSchema = new Schema({
           "{VALUE} is not a valid longitude/latitude(/altitude) coordinates array",
       },
     },
-    required: true,
   },
   sound: { type: Buffer, required: true },
   category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
@@ -24,7 +23,7 @@ const soundSchema = new Schema({
 });
 
 // Create a geospatial index on the location property.
-geolocatedSchema.index({ location: "2dsphere" });
+soundSchema.index({ location: "2dsphere" });
 
 // Validate a GeoJSON coordinates array (longitude, latitude and optional altitude).
 function validateGeoJsonCoordinates(value) {
