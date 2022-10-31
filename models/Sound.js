@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose.Schema;
-const User = mongoose.model("User", userSchema);
-const Category = mongoose.model("Category", categorySchema);
-const Comment = mongoose.model("Comment", commentSchema);
 
 // Define a schema
 const soundSchema = new Schema({
@@ -49,4 +46,4 @@ function isLongitude(value) {
 }
 
 // Create the model from the schema and export it
-export default mongoose.models.Sound || mongoose.model("Sound", soundSchema);
+export default mongoose.model("Sound", soundSchema);

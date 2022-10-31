@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
 const {Schema} = mongoose.Schema;
-const User = mongoose.model('User', userSchema);
-const Sound = mongoose.model('Sound', soundSchema);
 
 // Define a schema
 const commentSchema = new Schema({
@@ -12,4 +10,4 @@ const commentSchema = new Schema({
 });
 
 // Create the model from the schema and export it
-export default mongoose.models.Comment || mongoose.model('Comment', commentSchema);
+export default mongoose.model('Comment', commentSchema);
