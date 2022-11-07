@@ -2,6 +2,8 @@
     "watch":[
         "app.js",
         "bin/start.js",
-        "routes/**/*"
+        "routes/**/*",
+        "models/**/*",
+        "config.js"
     ]
 }
