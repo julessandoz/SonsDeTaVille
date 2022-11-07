@@ -5,7 +5,9 @@ import User from "../models/user.js";
 import * as config from "../config.js";
 const secretKey = config.jwtSecret;
 
-function authenticate(req, res, next) {
+const router = express.Router();
+
+export function authenticate(req, res, next) {
     // Ensure the header is present.
     const authorization = req.get("Authorization");
     if (!authorization) {
@@ -22,6 +24,7 @@ function authenticate(req, res, next) {
       if (err) {
         return res.status(401).send("Your token is invalid or has expired");
       } else {
+        req.currentUserRole = payload.scope;
         req.currentUserId = payload.sub;
         next(); // Pass the ID of the authenticated user to the next middleware.
       }
@@ -39,7 +42,8 @@ function authenticate(req, res, next) {
         else if (!valid) { return res.sendStatus(401); }
         // Generate a valid JWT which expires in 7 days.
         const exp = Math.floor(Date.now() / 1000) + 7 * 24 * 3600;
-        const payload = { sub: user._id.toString(), exp: exp };
+        const role = user.admin ? "admin" : "user";
+        const payload = { sub: user._id.toString(), exp: exp, scope: role };
         jwt.sign(payload, secretKey, function(err, token) {
           if (err) { return next(err); }
           res.send({ token: token }); // Send the token to the client.
@@ -47,7 +51,5 @@ function authenticate(req, res, next) {
       });
     })
   });
-
-const router = express.Router();
 
 export default router;
