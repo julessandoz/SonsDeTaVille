@@ -4,6 +4,7 @@
         "bin/start.js",
         "routes/**/*",
         "models/**/*",
-        "config.js"
+        "config.js",
+        "models/**/*"
     ]
 }
