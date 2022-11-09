@@ -6,6 +6,14 @@ const User = mongoose.models.User
 const router = express.Router();
 
 // GET LIST OF ALL USERS
+/**
+ * @api {get} /users Get a list of all users
+ * @apiGroup User
+ * @apiName GetUsers
+ * 
+ * @apiSuccess {String} informations Informations reçues
+ */
+
 router.get("/", authenticate, function (req, res, next) {
   User.find().sort('username').exec(function (err, users) {
     if (err) {
@@ -15,7 +23,14 @@ router.get("/", authenticate, function (req, res, next) {
   });
 });
 
-// FIND USER BY ID
+// FIND USER BY USERNAME
+/**
+ * @api {get} /users/:username Find a user by username(email)
+ * @apiGroup User
+ * @apiName FindUser 
+ * 
+ * @apiSuccess {String} informations Informations reçues
+ */
 router.get("/:username", authenticate, function (req, res, next) {
   User.findOne({username: req.params.username}, function (err, user) {
     if (err) {
@@ -28,6 +43,13 @@ router.get("/:username", authenticate, function (req, res, next) {
 
 
 // CREATE NEW USER
+/**
+ * @api {post} /users Create a new user
+ * @apiGroup User
+ * @apiName CreateUser
+ * 
+ * @apiSuccess {String} informations Informations reçues
+ */
 router.post("/", function (req, res, next) {
   const user = new User({username: req.body.username, email: req.body.email, clearPassword: req.body.password});
   user.save(function (err, savedUser) {
@@ -38,6 +60,15 @@ router.post("/", function (req, res, next) {
   });
 });
 
+
+// MODIFY A USER 
+/**
+ * @api {patch} /users/:username Modify a user
+ * @apiGroup User
+ * @apiName ModifyUser
+ * 
+ * @apiSuccess {String} informations Informations reçues
+ */
 router.patch("/:username", authenticate, function (req, res, next) {
   User.findOne({username: req.params.username}, function (err, user) {
     if (err) {

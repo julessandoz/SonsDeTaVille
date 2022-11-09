@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node ./bin/start",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "apidoc": "apidoc -i routes -o docs"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
@@ -15,10 +16,12 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.11.0",
     "mongoose": "^6.6.5",
-    "morgan": "~1.10.0"
+    "morgan": "~1.10.0",
+    "node-releases": "^2.0.6"
   },
   "devDependencies": {
-    "dotenv": "^16.0.3",
+    "apidoc": "^0.53.1",
+    "jest": "^29.2.2",
     "nodemon": "^2.0.20"
   }
 }
