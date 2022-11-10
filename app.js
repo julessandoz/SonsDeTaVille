@@ -5,12 +5,18 @@ import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
 import authRouter from "./routes/auth.js";
 import * as config from "./config.js";
+import path from "path";
+import { fileURLToPath } from 'url';
 
 import mongoose from 'mongoose';
 mongoose.Promise = Promise;
 mongoose.connect(config.databaseUrl);
 
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 app.use(logger("dev"));
 app.use(express.json());
@@ -19,6 +25,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/auth", authRouter);
+app.use("/docs", express.static(path.join(__dirname, "docs")));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -35,6 +42,7 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.send(err.message);
 });
+
 
 export default app;
 
