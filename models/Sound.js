@@ -17,7 +17,7 @@ const soundSchema = new Schema({
     },
   },
   sound: { type: Buffer, required: true },
-  category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+  category: { type: Schema.Types.ObjectId, ref: "Category" },
   comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
   date: { type: Date, default: Date.now }, // Default value is now
 });
@@ -42,6 +42,16 @@ function isLatitude(value) {
 
 function isLongitude(value) {
   return value >= -180 && value <= 180;
+}
+
+soundSchema.set("toJSON", {
+  transform: transformJsonSound,
+});
+
+function transformJsonSound(doc, json, options) {
+  // Remove the sound data from the generated JSON.
+  delete json.sound;
+  return json;
 }
 
 // Create the model from the schema and export it

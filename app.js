@@ -4,6 +4,7 @@ import logger from "morgan";
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
 import authRouter from "./routes/auth.js";
+import soundsRouter from "./routes/sounds.js";
 import * as config from "./config.js";
 import path from "path";
 import { fileURLToPath } from 'url';
@@ -11,6 +12,7 @@ import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 mongoose.Promise = Promise;
 mongoose.connect(config.databaseUrl);
+
 
 const app = express();
 
@@ -25,6 +27,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/auth", authRouter);
+app.use("/sounds", soundsRouter);
 app.use("/docs", express.static(path.join(__dirname, "docs")));
 
 // catch 404 and forward to error handler
