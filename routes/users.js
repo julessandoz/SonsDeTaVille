@@ -91,4 +91,23 @@ router.patch("/:username", authenticate, function (req, res, next) {
   });
 });
 
+// DELETE A USER
+router.delete("/:username", authenticate, function (req, res, next) {
+  User.findOne({username: req.params.username}, function (err, user) {
+    if (err) {
+      return next(err);
+    }
+    if (req.currentUserRole === "admin" || req.currentUserId === user._id) {
+      User.findOneAndDelete({username: req.params.username}, function (err, user) {
+        if (err) {
+          return next(err);
+        }
+        res.status(204).send("User deleted successfully!");
+      });
+    } else {
+      res.sendStatus(401);
+    }
+  });
+});
+
 export default router;
