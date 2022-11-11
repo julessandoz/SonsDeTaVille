@@ -29,5 +29,16 @@ userSchema.pre("save", async function () {
     throw err; 
 }});
 
+userSchema.set("toJSON", {
+  transform: transformJsonUser,
+});
+
+function transformJsonUser(doc, json, options) {
+  // Remove the hashed password from the generated JSON.
+  delete json.password;
+  delete json.admin;
+  return json;
+}
+
 // Create the model from the schema and export it
 export default mongoose.model("User", userSchema);

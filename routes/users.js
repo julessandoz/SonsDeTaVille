@@ -32,6 +32,7 @@ const router = express.Router();
  */ 
 
 router.get("/", authenticate, function (req, res, next) {
+  console.log(User);
   User.find().sort('username').exec(function (err, users) {
     if (err) {
       return next(err);
@@ -128,7 +129,7 @@ router.patch("/:username", authenticate, function (req, res, next) {
       return next(err);
     }
     if (req.currentUserRole === "admin" || req.currentUserId === user._id) {
-      user.username = req.body.username;
+      req.body.username? res.status(401).send("Username cannot be modified"): null;
       user.email = req.body.email;
       user.clearPassword = req.body.password;
       user.save(function (err, savedUser) {
@@ -136,6 +137,25 @@ router.patch("/:username", authenticate, function (req, res, next) {
           return next(err);
         }
         res.send(savedUser);
+      });
+    } else {
+      res.sendStatus(401);
+    }
+  });
+});
+
+// DELETE A USER
+router.delete("/:username", authenticate, function (req, res, next) {
+  User.findOne({username: req.params.username}, function (err, user) {
+    if (err) {
+      return next(err);
+    }
+    if (req.currentUserRole === "admin" || req.currentUserId === user._id) {
+      User.findOneAndDelete({username: req.params.username}, function (err, user) {
+        if (err) {
+          return next(err);
+        }
+        res.status(204).send("User deleted successfully!");
       });
     } else {
       res.sendStatus(401);
