@@ -6,6 +6,7 @@ import usersRouter from "./routes/users.js";
 import authRouter from "./routes/auth.js";
 import soundsRouter from "./routes/sounds.js";
 import categoriesRouter from "./routes/categories.js";
+import commentsRouter from "./routes/comments.js";
 import * as config from "./config.js";
 import path from "path";
 import { fileURLToPath } from 'url';
@@ -30,6 +31,7 @@ app.use("/users", usersRouter);
 app.use("/auth", authRouter);
 app.use("/sounds", soundsRouter);
 app.use("/categories", categoriesRouter);
+app.use("/comments", commentsRouter);
 app.use("/docs", express.static(path.join(__dirname, "docs")));
 
 // catch 404 and forward to error handler
