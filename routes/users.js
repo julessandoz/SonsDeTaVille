@@ -15,6 +15,7 @@ const router = express.Router();
  */
 
 router.get("/", authenticate, function (req, res, next) {
+  console.log(User);
   User.find().sort('username').exec(function (err, users) {
     if (err) {
       return next(err);
