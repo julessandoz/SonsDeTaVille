@@ -4,6 +4,20 @@ import {authenticate} from "./auth.js";
 
 const router = express.Router();
 
+// GET ALL SOUNDS
+
+/**
+ * @api {get} /sounds Get all sounds
+ * @apiName GetSounds
+ * @apiGroup Sounds
+ * @apiSuccess {Object[]} sounds List of sounds
+ * @apiSuccess {Schema.Types.ObjectId} user User id
+ * @apiSuccess {
+ *    @apiSuccess {String} title Sound title
+ *    @apiSuccess {
+ *        @apiSuccess 
+ *  
+ */
 router.get("/", function (req, res, next) {
   const { lat, lng, radius } = req.query.location;
   const category = req.query.category;
