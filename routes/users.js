@@ -76,7 +76,7 @@ router.patch("/:username", authenticate, function (req, res, next) {
       return next(err);
     }
     if (req.currentUserRole === "admin" || req.currentUserId === user._id) {
-      user.username = req.body.username;
+      req.body.username? res.status(401).send("Username cannot be modified"): null;
       user.email = req.body.email;
       user.clearPassword = req.body.password;
       user.save(function (err, savedUser) {
