@@ -1,6 +1,7 @@
 import express from "express";
 import Comment from "../models/Comment.js";
 import { authenticate } from "./auth.js";
+import mongoose from "mongoose";
 const User = mongoose.models.User;
 
 const router = express.Router();
