@@ -1,7 +1,9 @@
 import express, { json } from "express";
-import {authenticate} from "./auth.js";
+import { authenticate } from "./auth.js";
 import mongoose from "mongoose";
-const User = mongoose.models.User
+const User = mongoose.models.User;
+const Sound = mongoose.models.Sound;
+const Comment = mongoose.models.Comment;
 
 const router = express.Router();
 
@@ -10,49 +12,98 @@ const router = express.Router();
  * @api {get} /users Get a list of all users
  * @apiGroup User
  * @apiName GetUsers
- * 
+ *
  * @apiSuccess {String} informations Informations reçues
  */
 
 router.get("/", authenticate, function (req, res, next) {
   console.log(User);
-  User.find().sort('username').exec(function (err, users) {
-    if (err) {
-      return next(err);
-    }
-    res.send(users)
-  });
+  User.find()
+    .sort("username")
+    .exec(function (err, users) {
+      if (err) {
+        return next(err);
+      }
+
+      res.send(users);
+    });
 });
 
 // FIND USER BY USERNAME
 /**
  * @api {get} /users/:username Find a user by username(email)
  * @apiGroup User
- * @apiName FindUser 
- * 
+ * @apiName FindUser
+ *
  * @apiSuccess {String} informations Informations reçues
  */
-router.get("/:username", authenticate, function (req, res, next) {
-  User.findOne({username: req.params.username}, function (err, user) {
-    if (err) {
+router.get("/:username", authenticate, async function (req, res, next) {
+  User.findOne({ username: req.params.username }, function (err, user) {
+    if (err || !user) {
+      if (!user) {
+        err = new Error("User not found");
+        err.status = 404;
+      }
       return next(err);
     }
-    res.send(user);
+    let soundCount = 0;
+    Sound.aggregate(
+      [
+        {
+          $group: {
+            _id: "$user",
+            count: { $sum: 1 },
+          },
+        },
+      ],
+      function (err, result) {
+        if (err) {
+          return next(err);
+        }
+        result[0]? user.soundsPosted = result[0].count : user.soundsPosted = 0;
+      }
+    );
+    Comment.aggregate(
+      [
+        {
+          $group: {
+            _id: "$author",
+            count: { $sum: 1 },
+          },
+        },
+      ],
+      function (err, result) {
+        if (err) {
+          return next(err);
+        }
+        result[0]? user.commentsPosted = result[0].count : user.commentsPosted = 0;
+      }
+    ).then(() => {
+    res.send({
+      id: user._id,
+      username: user.username,
+      soundsPosted: user.soundsPosted,
+      commentsPosted: user.commentsPosted,
+      email: user.email,
+    });
+  });
   });
 });
-
-
 
 // CREATE NEW USER
 /**
  * @api {post} /users Create a new user
  * @apiGroup User
  * @apiName CreateUser
- * 
+ *
  * @apiSuccess {String} informations Informations reçues
  */
 router.post("/", function (req, res, next) {
-  const user = new User({username: req.body.username, email: req.body.email, clearPassword: req.body.password});
+  const user = new User({
+    username: req.body.username,
+    email: req.body.email,
+    clearPassword: req.body.password,
+  });
   user.save(function (err, savedUser) {
     if (err) {
       return next(err);
@@ -61,24 +112,31 @@ router.post("/", function (req, res, next) {
   });
 });
 
-
-// MODIFY A USER 
+// MODIFY A USER
 /**
  * @api {patch} /users/:username Modify a user
  * @apiGroup User
  * @apiName ModifyUser
- * 
+ *
  * @apiSuccess {String} informations Informations reçues
  */
 router.patch("/:username", authenticate, function (req, res, next) {
-  User.findOne({username: req.params.username}, function (err, user) {
-    if (err) {
+  User.findOne({ username: req.params.username }, function (err, user) {
+    if (err || !user) {
+      if (!user) {
+        err = new Error("User not found");
+        err.status = 404;
+      }
       return next(err);
     }
-    if (req.currentUserRole === "admin" || req.currentUserId === user._id) {
-      req.body.username? res.status(401).send("Username cannot be modified"): null;
-      user.email = req.body.email;
-      user.clearPassword = req.body.password;
+    if (req.currentUserRole === "admin" || req.currentUserId == user._id) {
+      req.body.username
+        ? res.status(401).send("Username cannot be modified")
+        : null;
+      user.email = req.body.email ? req.body.email : user.email;
+      user.clearPassword = req.body.password
+        ? req.body.password
+        : user.clearPassword;
       user.save(function (err, savedUser) {
         if (err) {
           return next(err);
@@ -93,21 +151,30 @@ router.patch("/:username", authenticate, function (req, res, next) {
 
 // DELETE A USER
 router.delete("/:username", authenticate, function (req, res, next) {
-  User.findOne({username: req.params.username}, function (err, user) {
-    if (err) {
+  User.findOne({ username: req.params.username }, function (err, user) {
+    if (err || !user) {
+      if (!user) {
+        err = new Error("User not found");
+        err.status = 404;
+      }
       return next(err);
     }
-    if (req.currentUserRole === "admin" || req.currentUserId === user._id) {
-      User.findOneAndDelete({username: req.params.username}, function (err, user) {
-        if (err) {
-          return next(err);
+    if (req.currentUserRole === "admin" || req.currentUserId == user._id) {
+      User.findOneAndDelete(
+        { username: req.params.username },
+        function (err, user) {
+          if (err) {
+            return next(err);
+          }
+          res.status(200).send("User deleted successfully!");
         }
-        res.status(204).send("User deleted successfully!");
-      });
+      );
     } else {
       res.sendStatus(401);
     }
   });
 });
+
+
 
 export default router;

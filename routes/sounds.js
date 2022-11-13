@@ -86,7 +86,11 @@ router.post("/", upload.single('uploaded_audio'), authenticate, function (req, r
 // GET A SOUND BY ID
 router.get("/:id", authenticate, function (req, res, next) {
   Sound.findById(req.params.id).populate("user").exec(function (err, sound) {
-    if (err) {
+    if (err || !sound) {
+      if (!sound) {
+        err = new Error("Sound not found");
+        err.status = 404;
+      }
       return next(err);
     }
     res.send(sound);
@@ -96,7 +100,11 @@ router.get("/:id", authenticate, function (req, res, next) {
 // GET SOUND DATA BY ID
 router.get("/data/:id", authenticate, function (req, res, next) {
   Sound.findById(req.params.id, function (err, sound) {
-    if (err) {
+    if (err || !sound) {
+      if (!sound) {
+        err = new Error("Sound not found");
+        err.status = 404;
+      }
       return next(err);
     }
     res.send(sound.sound);
@@ -106,7 +114,11 @@ router.get("/data/:id", authenticate, function (req, res, next) {
 // UPDATE A SOUND'S CATEGORY BY ID
 router.patch("/:id", authenticate, function (req, res, next) {
   Sound.findById(req.params.id, function (err, sound) {
-    if (err) {
+    if (err || !sound) {
+      if (!sound) {
+        err = new Error("Sound not found");
+        err.status = 404;
+      }
       return next(err);
     }
     if (sound.user != req.currentUserId || req.currentUserRole != "admin") {
@@ -127,7 +139,11 @@ router.delete("/:id", authenticate, function (req, res, next) {
   const soundToDelete = Sound.findById(req.params.id);
   if (soundToDelete.user === req.currentUserId || req.currentUserRole === "admin") {
     Sound.findByIdAndDelete(req.params.id, function (err, sound) {
-      if (err) {
+      if (err || !sound) {
+        if (!sound) {
+          err = new Error("Sound not found");
+          err.status = 404;
+        }
         return next(err);
       }
       res.status(204).send("Sound deleted successfully!");

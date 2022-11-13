@@ -66,9 +66,13 @@ router.patch("/:id", authenticate, function (req, res, next) {
   const author = User.find({ username: commentToEdit.author });
   if (author._id === req.currentUserId || req.currentUserRole === "admin") {
     Comment.findByIdAndUpdate(req.params.id, req.body, function (err, comment) {
-      if (err) {
-        return next(err);
-      }
+      if (err || !comment) {
+        if (!comment) {
+            err = new Error("Comment not found");
+            err.status = 404;
+        }
+    return next(err);
+    }
       res.send(comment);
     });
   } else {
@@ -81,9 +85,13 @@ router.delete("/:id", authenticate, function (req, res, next) {
   const commentToDelete = Comment.findById(req.params.id);
   if (commentToDelete.author === req.currentUserId || req.currentUserRole === "admin") {
     Comment.findByIdAndDelete(req.params.id, function (err, comment) {
-      if (err) {
-        return next(err);
-      }
+      if (err || !comment) {
+        if (!comment) {
+            err = new Error("Comment not found");
+            err.status = 404;
+        }
+    return next(err);
+    }
       res.send("Comment deleted");
     });
   } else {

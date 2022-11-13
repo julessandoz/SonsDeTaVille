@@ -18,7 +18,11 @@ router.get("/", authenticate, function (req, res, next) {
 // FIND CATEGORY BY NAME
 router.get("/:name", authenticate, function (req, res, next) {
     Category.findOne({ name: req.params.name }, function (err, category) {
-        if (err) {
+        if (err || !category) {
+            if (!category) {
+                err = new Error("Category not found");
+                err.status = 404;
+            }
         return next(err);
         }
         res.send(category);
@@ -47,7 +51,11 @@ router.delete("/:name", authenticate, function (req, res, next) {
         return res.status(401).send("Unauthorized");
     }
     Category.findOneAndDelete({ name: req.params.name }, function (err, category) {
-        if (err) {
+        if (err || !category) {
+            if (!category) {
+                err = new Error("Category not found");
+                err.status = 404;
+            }
         return next(err);
         }
         res.send(category);
