@@ -4,7 +4,7 @@ import app from "../app.js"
 import { cleanUpDatabase, generateValidJwt } from "./utils.js"
 import User from "../models/User.js"
 
-beforeEach(cleanUpDatabase); 
+ beforeEach(cleanUpDatabase);
 
 // CREATE USER TEST
 describe('POST /users', function() {
@@ -30,8 +30,7 @@ describe('POST /users', function() {
         User.create({ 
             username: 'Jules',
             email: 'jules@gmail.com',
-            clearPassword: 'Test1234',
-            admin: true
+            clearPassword: 'Test1234'
         })
       ]);
     }); 
@@ -74,11 +73,13 @@ describe('POST /users', function() {
           .set('Authorization', `Bearer ${token}`)
           .expect(200)
           .expect('Content-Type', /json/)
+          expect(res.body).toBeArray();
           expect(res.body).toHaveLength(2);
           expect(res.body[0]).toBeObject();
           expect(res.body[0]._id).toEqual(Jules.id)
           expect(res.body[0].username).toEqual(Jules.username)
           expect(res.body[1]).toBeObject();
+          expect(res.body[1]._id).toEqual(Stephane.id)
           expect(res.body[1].username).toEqual(Stephane.username)
         
         
@@ -112,7 +113,7 @@ describe('POST /users', function() {
   });
 
 
-  
+  //DELETE USER TEST  
   describe('DELETE /users/:username', function() {
     let Jules;
     let Stephane;
@@ -121,8 +122,7 @@ describe('POST /users', function() {
         User.create({ 
             username: 'Jules',
             email: 'jules@gmail.com',
-            clearPassword: 'Test1234',
-            admin: true
+            clearPassword: 'Test1234'
         }),
         User.create({ 
           username: 'Stephane',
@@ -140,14 +140,14 @@ describe('POST /users', function() {
     });
   });
 
-
+  // MODIFY USER TEST
   describe('PATCH /users/:username', function() {
     let Jules;
     beforeEach(async function() { 
         [Jules] = await Promise.all([
         User.create({ 
             username: 'Jules',
-            email: 'jules@yahoo.com',
+            email: 'jules@gmail.com',
             clearPassword: 'Test1234',
         })
       ]);
@@ -158,7 +158,7 @@ describe('POST /users', function() {
           .patch(`/users/${Jules.username}`)
           .set('Authorization', `Bearer ${token}`)
           .send({
-            email: "jules@gmail.com",
+            email: "jules@yahoo.com",
             password: "Test1234"
           })
           .expect(200)
