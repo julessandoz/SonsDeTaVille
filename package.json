@@ -7,10 +7,11 @@
     "start": "node ./bin/start",
     "dev": "nodemon",
     "apidoc": "apidoc -i routes -o docs",
-    "test": "cross-env DATABASE_URL=mongodb://127.0.0.1/sonsDeTaVilleTest node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "cross-env DATABASE_URL=mongodb://127.0.0.1/sonsDeTaVilleTest node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --runInBand"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
+    "browserlist": "^1.0.1",
     "browserslist": "^4.21.4",
     "debug": "~4.3.4",
     "express": "~4.18.1",

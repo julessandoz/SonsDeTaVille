@@ -10,6 +10,20 @@ import multer from "multer";
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
 
+// GET ALL SOUNDS
+
+/**
+ * @api {get} /sounds Get all sounds
+ * @apiName GetSounds
+ * @apiGroup Sounds
+ * @apiSuccess {Object[]} sounds List of sounds
+ * @apiSuccess {Schema.Types.ObjectId} user User id
+ * @apiSuccess {
+ *    @apiSuccess {String} title Sound title
+ *    @apiSuccess {
+ *        @apiSuccess 
+ *  
+ */
 // GET LIST OF SOUNDS THAT MATCH THE QUERY PARAMETERS
 router.get("/", authenticate, function (req, res, next) {
 let limit = 10;
