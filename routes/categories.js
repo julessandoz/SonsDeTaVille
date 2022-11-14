@@ -4,6 +4,26 @@ import mongoose from "mongoose";
 import Category from "../models/Category.js";
 
 const router = express.Router();
+// create apidoc comment
+/**
+ * @api {get} /categories Get all categories
+ * @apiName GetCategories
+ * @apiGroup Categories
+ * @apiSuccess {Object[]} categories List of categories
+ * @apiSuccess {String} categories._id Category id
+ * @apiSuccess {String} categories.name Category name
+ * @apiSuccess {String} categories.color Category color
+ * @apiSuccessExample {json} Success
+ *  HTTP/1.1 200 OK
+ * [
+ * {
+ *  "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
+ * "name": "Animaux",
+ * "color": "red",
+ * "__v": 0
+ * }
+ * ]
+ */
 
 // GET LIST OF ALL CATEGORIES
 router.get("/", authenticate, function (req, res, next) {

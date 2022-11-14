@@ -7,7 +7,6 @@ const Sound = mongoose.models.Sound;
 
 const router = express.Router();
 
-//create apidoc comments
 /**
  * @api {get} /comments Get all comments
  * @apiName GetComments
