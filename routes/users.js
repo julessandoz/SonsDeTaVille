@@ -71,7 +71,7 @@ router.get("/:username", authenticate, function (req, res, next) {
     }
     let soundCount;
     let commentCount;
-    const result = Sound.aggregate(
+    Sound.aggregate(
       [
         { $match: { user: user._id } },
         {
@@ -221,5 +221,9 @@ router.delete("/:username", authenticate, function (req, res, next) {
     }
   });
 });
+
+export function getUserFromId(id) {
+  return User.findById(id);
+}
 
 export default router;
