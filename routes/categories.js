@@ -4,7 +4,9 @@ import mongoose from "mongoose";
 import Category from "../models/Category.js";
 
 const router = express.Router();
-// create apidoc comment
+
+
+// GET LIST OF ALL CATEGORIES
 /**
  * @api {get} /categories Get all categories
  * @apiName GetCategories
@@ -25,7 +27,6 @@ const router = express.Router();
  * ]
  */
 
-// GET LIST OF ALL CATEGORIES
 router.get("/", authenticate, function (req, res, next) {
   Category.find().sort("name").exec(function (err, categories) {
     if (err) {
@@ -36,6 +37,32 @@ router.get("/", authenticate, function (req, res, next) {
 });
 
 // FIND CATEGORY BY NAME
+/**
+ * @api {get} /categories/:name Get a category by name
+ * @apiName GetCategoryByName
+ * @apiGroup Categories
+ * @apiParam {String} name Category name
+ * @apiSuccess {String} _id Category id
+ * @apiSuccess {String} name Category name
+ * @apiSuccess {String} color Category color
+ * @apiSuccess {Object[]} categories List of categories
+ * @apiSuccessExample {json} Success
+ *  HTTP/1.1 200 OK
+ * [
+ * {
+ *  "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
+ * "name": "Animaux",
+ * "color": "red",
+ * "__v": 0
+ * }
+ * ]
+ * @apiErrorExample {json} List error
+ * HTTP/1.1 404 Not Found
+ * {
+ * "message": "Category not found"
+ * }
+ */
+
 router.get("/:name", authenticate, function (req, res, next) {
     Category.findOne({ name: req.params.name }, function (err, category) {
         if (err || !category) {
@@ -50,6 +77,31 @@ router.get("/:name", authenticate, function (req, res, next) {
     });
 
 // CREATE NEW CATEGORY
+/**
+ * @api {post} /categories Create a new category
+ * @apiName CreateCategory
+ * @apiGroup Categories
+ * @apiBody {String} name Category name
+ * @apiBody {String} color Category color
+ * @apiPermission admin
+ * @apiSuccess {String} _id Category id
+ * @apiSuccess {String} name Category name
+ * @apiSuccess {String} color Category color
+ * @apiSuccessExample {json} Success
+ * HTTP/1.1 200 OK
+ * {
+ * "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
+ * "name": "Animaux",
+ * "color": "red",
+ * "__v": 0
+ * }
+ * @apiErrorExample {json} List error
+ * HTTP/1.1 401 Unauthorized
+ * {
+ * "message": "Unauthorized"
+ * }
+ */
+
 router.post("/", authenticate, function (req, res, next) {
     if (req.currentUserRole != "admin") {
         return res.status(401).send("Unauthorized");
@@ -66,6 +118,25 @@ router.post("/", authenticate, function (req, res, next) {
 );
 
 // DELETE CATEGORY
+/**
+    * @api {delete} /categories/:name Delete a category
+    * @apiName DeleteCategory
+    * @apiGroup Categories
+    * @apiParam {String} name Category name
+    * @apiPermission admin
+    * @apiSuccess {String} message Category deleted
+    * @apiSuccessExample {json} Success
+    * HTTP/1.1 200 OK
+    * {
+    * "message": "Category deleted"
+    * }
+    * @apiErrorExample {json} Category not found
+    * HTTP/1.1 404 Not Found
+    * {
+    * "message": "Category not found"
+    * }
+*/
+
 router.delete("/:name", authenticate, function (req, res, next) {
     if (req.currentUserRole != "admin") {
         return res.status(401).send("Unauthorized");

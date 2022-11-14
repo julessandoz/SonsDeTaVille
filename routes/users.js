@@ -42,8 +42,6 @@ router.get("/", authenticate, function (req, res, next) {
     });
 });
 
-
-
 // FIND USER BY USERNAME
 
 /**
@@ -120,8 +118,6 @@ router.get("/:username", authenticate, function (req, res, next) {
   });
 });
 
-
-
 // CREATE NEW USER
 
 /**
@@ -132,7 +128,7 @@ router.get("/:username", authenticate, function (req, res, next) {
  * @apiBody {String{2..20}} username User username
  * @apiBody {String} email User email
  * @apiBody {String} password User password
- * @apiBody {Boolean=false} admin User admin 
+ * @apiBody {Boolean=false} admin User admin
  * @apiParamExample {json} Request-Example:
  * {
  * "username": "Bowser",
@@ -164,8 +160,6 @@ router.post("/", function (req, res, next) {
   });
 });
 
-
-
 // MODIFY A USER
 
 /**
@@ -190,13 +184,13 @@ router.post("/", function (req, res, next) {
  * "password": "123456",
  * "email": "
  * }
- * 
- * @apiErrorExample {json} Error 404 
+ *
+ * @apiErrorExample {json} Error 404
  * HTTP/1.1 404 Not Found
  * {
  * "message": "User not found"
  * }
- * 
+ *
  * @apiErrorExample {json} Error 401
  * HTTP/1.1 401 Unauthorized
  * {
@@ -233,8 +227,6 @@ router.patch("/:username", authenticate, function (req, res, next) {
   });
 });
 
-
-
 // DELETE A USER
 
 /**
@@ -242,6 +234,7 @@ router.patch("/:username", authenticate, function (req, res, next) {
  * @apiGroup Users
  * @apiName DeleteUser
  * @apiParam {String} username Username of the user
+ * @apiSuccess {String} message User deleted
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
@@ -257,7 +250,7 @@ router.patch("/:username", authenticate, function (req, res, next) {
  * {
  * "message": "User not found"
  * }
-*/
+ */
 
 router.delete("/:username", authenticate, function (req, res, next) {
   User.findOne({ username: req.params.username }, function (err, user) {

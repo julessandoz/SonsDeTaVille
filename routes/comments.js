@@ -19,9 +19,9 @@ const router = express.Router();
  * @apiSuccess {Date} comments.createdAt Comment creation date
  * @apiSuccess {Date} comments.updatedAt Comment update date
  * @apiSuccessExample {json} Success
- *   HTTP/1.1 200 OK
- *  [
- *   {
+ * HTTP/1.1 200 OK
+ * [
+ * {
  * "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
  * "text": "This is a comment",
  * "author": "Mario",
@@ -92,13 +92,12 @@ router.get("/", authenticate, function (req, res, next) {
  * @apiBody {String} sound  sound id
  * @apiBody {String} comment Comment text
  * @apiSampleRequest https://sons-de-ta-ville.onrender.com/comments
- * @apiSuccess {String} text Comment created
+ * @apiSuccess {String} message Comment created
  * @apiSuccessExample {json} Success
  *  HTTP/1.1 200 OK
  * {
- * "text": "Comment created"
+ * "message": "Comment created"
  * }
- *
  */
 
 router.post("/", authenticate, function (req, res, next) {
@@ -128,12 +127,11 @@ router.post("/", authenticate, function (req, res, next) {
  * @apiGroup Comments
  * @apiName ModifyComment
  * @apiParam {String} idComment id of the comment
- *
- * @apiSuccess {String} Comments Comment updated
+ * @apiSuccess {String} message Comment updated
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
- * "Comments": "Comment updated"
+ * "message": "Comment updated"
  * }
  * @apiError CommentNotFound The id of the comment was not found.
  * @apiErrorExample {json} Error
@@ -173,11 +171,11 @@ router.patch("/:id", authenticate, function (req, res, next) {
  * @apiGroup Comments
  * @apiName DeleteComment
  * @apiParam {String} idComment id of the comment
- * @apiSuccess {String} Comments Comment deleted
+ * @apiSuccess {String} message Comment deleted
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
- * "Comments": "Comment deleted"
+ * "message": "Comment deleted"
  * }
  * @apiError (401) Unauthorized You are not authorized to delete this comment
  * @apiErrorExample {json} Unauthorized
