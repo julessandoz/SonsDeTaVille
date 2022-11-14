@@ -105,13 +105,8 @@ router.post("/", authenticate, function (req, res, next) {
   const author = req.currentUserId;
     const comment = new Comment({
       sound: req.body.sound,
-<<<<<<< HEAD
       author: author,
       comment: req.body.comment
-=======
-      author: user._id,
-      comment: req.body.comment,
->>>>>>> e60706df81d785c6e16f9ecdbcca02dd3db5df00
     });
     
     Sound.findById(req.body.sound, function (err, sound) {
