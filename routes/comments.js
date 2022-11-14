@@ -3,6 +3,7 @@ import Comment from "../models/Comment.js";
 import { authenticate } from "./auth.js";
 import mongoose from "mongoose";
 const User = mongoose.models.User;
+const Sound = mongoose.models.Sound;
 
 const router = express.Router();
 
@@ -40,20 +41,35 @@ router.get("/", authenticate, function (req, res, next) {
   let limit = 10;
   const maxLimit = 100;
   const minLimit = 1;
+  let maxOffset = Comment.countDocuments();
+  const minOffset = 0;
 
   if (req.query.sound) {
+    Sound.findById(req.query.sound, function (err, sound) {
+      if (err || !sound) {
+        if (!sound) {
+          err = new Error("Sound not found");
+          err.status = 404;
+        }
+        return next(err);
+      }
     query.sound = req.query.sound;
+    });
   }
   if (req.query.user) {
     query.author = req.query.user;
-  }
-  if (req.query.offset) {
-    offset = req.query.offset;
   }
   if (req.query.limit) {
     limit = req.query.limit;
     limit = limit > maxLimit ? maxLimit : limit;
     limit = limit < minLimit ? minLimit : limit;
+    maxOffset -= limit;
+  }
+  if (req.query.offset) {
+    maxOffset = Comment.countDocuments(query) - limit;
+    offset = req.query.offset;
+    offset = offset > maxOffset ? maxOffset : offset;
+    offset = offset < minOffset ? minOffset : offset;
   }
 
   Comment.find(query)
@@ -104,7 +120,7 @@ router.patch("/:id", authenticate, function (req, res, next) {
         }
         return next(err);
       }
-      res.send(comment);
+      res.send("Comment updated");
     });
   } else {
     res.status(401).send("You are not authorized to edit this comment");
