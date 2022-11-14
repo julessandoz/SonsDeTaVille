@@ -5,6 +5,7 @@
         "routes/**/*",
         "models/**/*",
         "config.js",
-        "models/**/*"
+        "models/**/*",
+        "ws.js"
     ]
 }
