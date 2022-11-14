@@ -129,18 +129,17 @@ router.get("/:username", authenticate, function (req, res, next) {
  * @apiGroup Users
  * @apiName CreateUser
  *
- * @apiParam {String{2..20}} username User username
- * @apiParam {String} email User email
- * @apiParam {String} password User password
- * @apiParam {Boolean=false} admin User admin 
- * @apiParamExample {json} Input
+ * @apiBody {String{2..20}} username User username
+ * @apiBody {String} email User email
+ * @apiBody {String} password User password
+ * @apiBody {Boolean=false} admin User admin 
+ * @apiParamExample {json} Request-Example:
  * {
  * "username": "Bowser",
  * "email": "king@tendo.jp",
  * "password": "123456",
  * "admin": true
  * }
- *
  * @apiSuccess {String} informations Informations recieved
  * @apiSuccessExample {json} Success
  *  HTTP/1.1 200 OK
@@ -174,8 +173,8 @@ router.post("/", function (req, res, next) {
  * @apiGroup Users
  * @apiName ModifyUser
  * @apiParam {String} username Username of the user
- * @apiParam {String} password User password
- * @apiParam {String} email User email
+ * @apiBody {String} password User password
+ * @apiBody {String} email User email
  * @apiParamExample {json} Input
  * {
  * "username": "Mario",
