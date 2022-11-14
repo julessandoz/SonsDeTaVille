@@ -20,9 +20,9 @@ const router = express.Router();
  * @apiSuccess {Date} comments.createdAt Comment creation date
  * @apiSuccess {Date} comments.updatedAt Comment update date
  * @apiSuccessExample {json} Success
- *   HTTP/1.1 200 OK
- *  [
- *   {
+ * HTTP/1.1 200 OK
+ * [
+ * {
  * "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
  * "text": "This is a comment",
  * "author": "Mario",
@@ -53,7 +53,7 @@ router.get("/", authenticate, function (req, res, next) {
         }
         return next(err);
       }
-    query.sound = req.query.sound;
+      query.sound = req.query.sound;
     });
   }
   if (req.query.user) {
@@ -86,12 +86,32 @@ router.get("/", authenticate, function (req, res, next) {
 });
 
 // CREATE A NEW COMMENT
+/**
+ * @api {post} https://sons-de-ta-ville.onrender.com/comments Create a new comment
+ * @apiGroup Comments
+ * @apiName CreateComment
+ * @apiBody {String} sound  sound id
+ * @apiBody {String} comment Comment text
+ * @apiSampleRequest https://sons-de-ta-ville.onrender.com/comments
+ * @apiSuccess {String} message Comment created
+ * @apiSuccessExample {json} Success
+ *  HTTP/1.1 200 OK
+ * {
+ * "message": "Comment created"
+ * }
+ */
+
 router.post("/", authenticate, function (req, res, next) {
   const author = req.currentUserId;
     const comment = new Comment({
       sound: req.body.sound,
+<<<<<<< HEAD
       author: author,
       comment: req.body.comment
+=======
+      author: user._id,
+      comment: req.body.comment,
+>>>>>>> e60706df81d785c6e16f9ecdbcca02dd3db5df00
     });
     
     Sound.findById(req.body.sound, function (err, sound) {
@@ -104,7 +124,7 @@ router.post("/", authenticate, function (req, res, next) {
       }
     comment.save(function (err, comment) {
       if (err) {
-        console.log(err)
+        console.log(err);
         return next(err);
       }
       sendMessageToUser("New comment", sound.user, "newNotification");
@@ -115,6 +135,30 @@ router.post("/", authenticate, function (req, res, next) {
 
 
 // UPDATE A COMMENT
+/**
+ * @api {patch} /comments/:idComment Modify a comment
+ * @apiGroup Comments
+ * @apiName ModifyComment
+ * @apiParam {String} idComment id of the comment
+ * @apiSuccess {String} message Comment updated
+ * @apiSuccessExample {json} Success
+ * HTTP/1.1 200 OK
+ * {
+ * "message": "Comment updated"
+ * }
+ * @apiError CommentNotFound The id of the comment was not found.
+ * @apiErrorExample {json} Error
+ * HTTP/1.1 404 Not Found
+ * {
+ * "error": "CommentNotFound"
+ * }
+ * @apiErrorExample {json} Error
+ * HTTP/1.1 401 Unauthorized
+ * {
+ * "error": "Unauthorized"
+ * }
+ */
+
 router.patch("/:id", authenticate, function (req, res, next) {
   const commentToEdit = Comment.findById(req.params.id);
   const author = User.find({ username: commentToEdit.author });
@@ -135,6 +179,31 @@ router.patch("/:id", authenticate, function (req, res, next) {
 });
 
 // DELETE A COMMENT
+/**
+ * @api {delete} /comments/:idComment Delete a comment
+ * @apiGroup Comments
+ * @apiName DeleteComment
+ * @apiParam {String} idComment id of the comment
+ * @apiSuccess {String} message Comment deleted
+ * @apiSuccessExample {json} Success
+ * HTTP/1.1 200 OK
+ * {
+ * "message": "Comment deleted"
+ * }
+ * @apiError (401) Unauthorized You are not authorized to delete this comment
+ * @apiErrorExample {json} Unauthorized
+ * HTTP/1.1 401 Unauthorized
+ * {
+ * "error": "You are not authorized to delete this comment"
+ * }
+ * @apiError (404) CommentNotFound Comment not found
+ * @apiErrorExample {json} CommentNotFound
+ * HTTP/1.1 404 CommentNotFound
+ * {
+ * "error": "Comment not found"
+ * }
+ *
+ */
 router.delete("/:id", authenticate, function (req, res, next) {
   const commentToDelete = Comment.findById(req.params.id);
   if (

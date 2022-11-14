@@ -24,7 +24,7 @@ const router = express.Router();
  * {
  * "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
  * "username": "Mario",
- * "email": "
+ * "email": "mario@tendo.jp"
  * "admin": false,
  * "__v": 0
  * }
@@ -46,7 +46,7 @@ router.get("/", authenticate, function (req, res, next) {
 
 /**
  * @api {get} /users/:username Find a user by username(email)
- * @apiGroup User
+ * @apiGroup Users
  * @apiName FindUser
  * @apiParam {String} username User username
  * @apiSuccess {String} _id User id
@@ -57,8 +57,8 @@ router.get("/", authenticate, function (req, res, next) {
  * HTTP/1.1 200 OK
  * {
  * "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
- * "username": "Mario",
- * "email": "
+ * "username": "Luigi",
+ * "email": "luigi@tendo.jp"
  * "admin": false,
  * "__v": 0
  * }
@@ -122,16 +122,27 @@ router.get("/:username", authenticate, function (req, res, next) {
 
 /**
  * @api {post} /users Create a new user
- * @apiGroup User
+ * @apiGroup Users
  * @apiName CreateUser
  *
- * @apiSuccess {String} informations Informations reçues
+ * @apiBody {String{2..20}} username User username
+ * @apiBody {String} email User email
+ * @apiBody {String} password User password
+ * @apiBody {Boolean=false} admin User admin
+ * @apiParamExample {json} Request-Example:
+ * {
+ * "username": "Bowser",
+ * "email": "king@tendo.jp",
+ * "password": "123456",
+ * "admin": true
+ * }
+ * @apiSuccess {String} informations Informations recieved
  * @apiSuccessExample {json} Success
  *  HTTP/1.1 200 OK
  * {
  * "username": "Mario",
  * "password": "1234",
- * "email": "
+ * "email": mario@tendo.jp"
  * }
  */
 
@@ -153,17 +164,37 @@ router.post("/", function (req, res, next) {
 
 /**
  * @api {patch} /users/:username Modify a user
- * @apiGroup User
+ * @apiGroup Users
  * @apiName ModifyUser
  * @apiParam {String} username Username of the user
+ * @apiBody {String} password User password
+ * @apiBody {String} email User email
+ * @apiParamExample {json} Input
+ * {
+ * "username": "Mario",
+ * "email": "
+ * "password": "1234"
+ * }
  *
- * @apiSuccess {String} informations Informations reçues
+ * @apiSuccess {String} informations Informations recieved
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
  * "username": "Mario",
- * "password": "1234",
+ * "password": "123456",
  * "email": "
+ * }
+ *
+ * @apiErrorExample {json} Error 404
+ * HTTP/1.1 404 Not Found
+ * {
+ * "message": "User not found"
+ * }
+ *
+ * @apiErrorExample {json} Error 401
+ * HTTP/1.1 401 Unauthorized
+ * {
+ * "message": "Unauthorized"
  * }
  */
 
@@ -197,6 +228,30 @@ router.patch("/:username", authenticate, function (req, res, next) {
 });
 
 // DELETE A USER
+
+/**
+ * @api {delete} /users/:username Delete a user
+ * @apiGroup Users
+ * @apiName DeleteUser
+ * @apiParam {String} username Username of the user
+ * @apiSuccess {String} message User deleted
+ * @apiSuccessExample {json} Success
+ * HTTP/1.1 200 OK
+ * {
+ * "message": "User deleted"
+ * }
+ * @apiErrorExample {json} Error
+ * HTTP/1.1 401 Unauthorized
+ * {
+ * "message": "Unauthorized"
+ * }
+ * @apiErrorExample {json} Error 404
+ * HTTP/1.1 404 Not Found
+ * {
+ * "message": "User not found"
+ * }
+ */
+
 router.delete("/:username", authenticate, function (req, res, next) {
   User.findOne({ username: req.params.username }, function (err, user) {
     if (err || !user) {
