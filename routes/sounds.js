@@ -19,14 +19,15 @@ const upload = multer({ storage: storage })
  * @apiSuccess {Object[]} sounds List of sounds
  * @apiSuccess {Schema.Types.ObjectId} user User id
  * @apiSuccess {
- *    @apiSuccess {String} title Sound title
- *    @apiSuccess {
- *        @apiSuccess 
- *  
+ * @apiSuccess {String} title Sound title
+ * @apiSuccess {
+ * @apiSuccess 
+ * 
  */
 // GET LIST OF SOUNDS THAT MATCH THE QUERY PARAMETERS
 router.get("/", authenticate, function (req, res, next) {
 let limit = 10;
+let offset = 0;
 let query = {};
   if (req.query.location) {
       const location = JSON.parse(req.query.location);
@@ -66,6 +67,15 @@ let query = {};
     limit = req.query.limit;
     limit = limit > maxLimit ? maxLimit : limit;
     limit = limit < minLimit ? minLimit : limit;
+  }
+
+  if (req.query.offset) {
+    const totalSounds = Sound.countDocuments(query);
+    const maxOffset = totalSounds - limit;
+    const minOffset = 0;
+    offset = req.query.offset;
+    offset = offset > maxOffset ? maxOffset : offset;
+    offset = offset < minOffset ? minOffset : offset;
   }
   Sound.find(query).limit(limit).sort({date: -1}).populate("user").exec(function (err, sounds) {
     if (err) {
