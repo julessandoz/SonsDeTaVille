@@ -22,8 +22,8 @@ const router = express.Router();
  *   HTTP/1.1 200 OK
  *  [
  *   {
- *   "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
- *  "text": "This is a comment",
+ * "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
+ * "text": "This is a comment",
  * "author": "Mario",
  * "post": "Juego de Mario",
  * "createdAt": "2020-10-08T20:00:00.000Z",
