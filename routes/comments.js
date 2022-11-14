@@ -6,7 +6,6 @@ const User = mongoose.models.User;
 
 const router = express.Router();
 
-//create apidoc comments
 /**
  * @api {get} /comments Get all comments
  * @apiName GetComments
