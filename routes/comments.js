@@ -85,6 +85,21 @@ router.get("/", authenticate, function (req, res, next) {
 });
 
 // CREATE A NEW COMMENT
+/**
+ * @api {post} /comments Create a new comment
+ * @apiGroup Comments
+ * @apiName CreateComment
+ * @apiSuccess {String} sound  sound id
+ * @apiSuccess {String} user user id
+ * @apiSuccess {String} comments comment text
+ * @apiSuccessExample {json} Success
+ *  HTTP/1.1 200 OK
+ * {
+ * "sound": "56",
+ * "author": "12345",
+ * "comment": "This is a comment"
+ * }
+ */
 router.post("/", authenticate, function (req, res, next) {
   const authorUsername = req.body.author;
   User.findOne({ username: authorUsername }).then((user, err) => {

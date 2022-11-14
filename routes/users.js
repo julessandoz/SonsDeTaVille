@@ -131,7 +131,7 @@ router.get("/:username", authenticate, function (req, res, next) {
  * {
  * "username": "Mario",
  * "password": "1234",
- * "email": "
+ * "email": mario@example.com"
  * }
  */
 
