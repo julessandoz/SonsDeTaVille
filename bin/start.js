@@ -7,6 +7,7 @@
 import app from "../app.js";
 import createDebugger from "debug";
 import http from "http";
+import { createWSS } from "../ws.js";
 
 const debug = createDebugger('sons-de-ta-ville:server')
 /**
@@ -21,6 +22,7 @@ app.set("port", port);
  */
 
 const server = http.createServer(app);
+createWSS(server);
 
 /**
  * Listen on provided port, on all network interfaces.

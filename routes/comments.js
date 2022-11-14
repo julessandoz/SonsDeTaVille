@@ -2,6 +2,7 @@ import express from "express";
 import Comment from "../models/Comment.js";
 import { authenticate } from "./auth.js";
 import mongoose from "mongoose";
+import { sendMessageToUser } from "../ws.js";
 const User = mongoose.models.User;
 const Sound = mongoose.models.Sound;
 
@@ -86,25 +87,32 @@ router.get("/", authenticate, function (req, res, next) {
 
 // CREATE A NEW COMMENT
 router.post("/", authenticate, function (req, res, next) {
-  const authorUsername = req.body.author;
-  User.findOne({ username: authorUsername }).then((user, err) => {
-    if (err) {
-      return next(err);
-    }
+  const author = req.currentUserId;
     const comment = new Comment({
       sound: req.body.sound,
-      author: user._id,
+      author: author,
       comment: req.body.comment
     });
+    
+    Sound.findById(req.body.sound, function (err, sound) {
+      if (err || !sound) {
+        if (!sound) {
+          err = new Error("Sound not found");
+          err.status = 404;
+        }
+        return next(err);
+      }
     comment.save(function (err, comment) {
       if (err) {
         console.log(err)
         return next(err);
       }
-      res.send(comment);
+      sendMessageToUser("New comment", sound.user, "newNotification");
+      res.status(201).send("Comment created");
     });
   });
 });
+
 
 // UPDATE A COMMENT
 router.patch("/:id", authenticate, function (req, res, next) {
