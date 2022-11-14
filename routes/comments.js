@@ -52,7 +52,7 @@ router.get("/", authenticate, function (req, res, next) {
         }
         return next(err);
       }
-    query.sound = req.query.sound;
+      query.sound = req.query.sound;
     });
   }
   if (req.query.user) {
@@ -94,10 +94,11 @@ router.get("/", authenticate, function (req, res, next) {
  * @apiSampleRequest https://sons-de-ta-ville.onrender.com/comments
  * @apiSuccess {String} text Comment created
  * @apiSuccessExample {json} Success
- * HTTP/1.1 200 OK
- * 
- * Comment created
- * 
+ *  HTTP/1.1 200 OK
+ * {
+ * "text": "Comment created"
+ * }
+ *
  */
 
 router.post("/", authenticate, function (req, res, next) {
@@ -109,11 +110,11 @@ router.post("/", authenticate, function (req, res, next) {
     const comment = new Comment({
       sound: req.body.sound,
       author: user._id,
-      comment: req.body.comment
+      comment: req.body.comment,
     });
     comment.save(function (err, comment) {
       if (err) {
-        console.log(err)
+        console.log(err);
         return next(err);
       }
       res.send(comment);
@@ -132,7 +133,18 @@ router.post("/", authenticate, function (req, res, next) {
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
-  * "Comments": "Comment updated"
+ * "Comments": "Comment updated"
+ * }
+ * @apiError CommentNotFound The id of the comment was not found.
+ * @apiErrorExample {json} Error
+ * HTTP/1.1 404 Not Found
+ * {
+ * "error": "CommentNotFound"
+ * }
+ * @apiErrorExample {json} Error
+ * HTTP/1.1 401 Unauthorized
+ * {
+ * "error": "Unauthorized"
  * }
  */
 
@@ -161,13 +173,25 @@ router.patch("/:id", authenticate, function (req, res, next) {
  * @apiGroup Comments
  * @apiName DeleteComment
  * @apiParam {String} idComment id of the comment
- *
  * @apiSuccess {String} Comments Comment deleted
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
-  * "Comments": "Comment deleted"
+ * "Comments": "Comment deleted"
  * }
+ * @apiError (401) Unauthorized You are not authorized to delete this comment
+ * @apiErrorExample {json} Unauthorized
+ * HTTP/1.1 401 Unauthorized
+ * {
+ * "error": "You are not authorized to delete this comment"
+ * }
+ * @apiError (404) CommentNotFound Comment not found
+ * @apiErrorExample {json} CommentNotFound
+ * HTTP/1.1 404 CommentNotFound
+ * {
+ * "error": "Comment not found"
+ * }
+ *
  */
 router.delete("/:id", authenticate, function (req, res, next) {
   const commentToDelete = Comment.findById(req.params.id);
