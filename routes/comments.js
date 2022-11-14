@@ -86,20 +86,20 @@ router.get("/", authenticate, function (req, res, next) {
 
 // CREATE A NEW COMMENT
 /**
- * @api {post} /comments Create a new comment
+ * @api {post} https://sons-de-ta-ville.onrender.com/comments Create a new comment
  * @apiGroup Comments
  * @apiName CreateComment
- * @apiSuccess {String} sound  sound id
- * @apiSuccess {String} user user id
- * @apiSuccess {String} comments comment text
+ * @apiBody {String} sound  sound id
+ * @apiBody {String} comment Comment text
+ * @apiSampleRequest https://sons-de-ta-ville.onrender.com/comments
+ * @apiSuccess {String} text Comment created
  * @apiSuccessExample {json} Success
- *  HTTP/1.1 200 OK
- * {
- * "sound": "56",
- * "author": "12345",
- * "comment": "This is a comment"
- * }
+ * HTTP/1.1 200 OK
+ * 
+ * Comment created
+ * 
  */
+
 router.post("/", authenticate, function (req, res, next) {
   const authorUsername = req.body.author;
   User.findOne({ username: authorUsername }).then((user, err) => {
@@ -122,6 +122,20 @@ router.post("/", authenticate, function (req, res, next) {
 });
 
 // UPDATE A COMMENT
+/**
+ * @api {patch} /comments/:idComment Modify a comment
+ * @apiGroup Comments
+ * @apiName ModifyComment
+ * @apiParam {String} idComment id of the comment
+ *
+ * @apiSuccess {String} Comments Comment updated
+ * @apiSuccessExample {json} Success
+ * HTTP/1.1 200 OK
+ * {
+  * "Comments": "Comment updated"
+ * }
+ */
+
 router.patch("/:id", authenticate, function (req, res, next) {
   const commentToEdit = Comment.findById(req.params.id);
   const author = User.find({ username: commentToEdit.author });
@@ -142,6 +156,19 @@ router.patch("/:id", authenticate, function (req, res, next) {
 });
 
 // DELETE A COMMENT
+/**
+ * @api {delete} /comments/:idComment Delete a comment
+ * @apiGroup Comments
+ * @apiName DeleteComment
+ * @apiParam {String} idComment id of the comment
+ *
+ * @apiSuccess {String} Comments Comment deleted
+ * @apiSuccessExample {json} Success
+ * HTTP/1.1 200 OK
+ * {
+  * "Comments": "Comment deleted"
+ * }
+ */
 router.delete("/:id", authenticate, function (req, res, next) {
   const commentToDelete = Comment.findById(req.params.id);
   if (
