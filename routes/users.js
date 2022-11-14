@@ -7,8 +7,6 @@ const Comment = mongoose.models.Comment;
 
 const router = express.Router();
 
-
-
 // GET LIST OF ALL USERS
 
 /**
@@ -31,18 +29,18 @@ const router = express.Router();
  * "__v": 0
  * }
  * ]
- */ 
+ */
 
 router.get("/", authenticate, function (req, res, next) {
-  User.find().sort('username').exec(function (err, users) {
-    if (err) {
-      return next(err);
-    }
-    res.send(users)
-  });
+  User.find()
+    .sort("username")
+    .exec(function (err, users) {
+      if (err) {
+        return next(err);
+      }
+      res.send(users);
+    });
 });
-
-
 
 // FIND USER BY USERNAME
 
@@ -67,13 +65,15 @@ router.get("/", authenticate, function (req, res, next) {
  */
 
 router.get("/:username", authenticate, function (req, res, next) {
-  User.findOne({username: req.params.username}, function (err, user) {
+  User.findOne({ username: req.params.username }, function (err, user) {
     if (err) {
       return next(err);
     }
-    let soundCount = 0;
-    Sound.aggregate(
+    let soundCount;
+    let commentCount;
+    const result = Sound.aggregate(
       [
+        { $match: { user: user._id } },
         {
           $group: {
             _id: "$user",
@@ -85,38 +85,41 @@ router.get("/:username", authenticate, function (req, res, next) {
         if (err) {
           return next(err);
         }
-        result[0]? user.soundsPosted = result[0].count : user.soundsPosted = 0;
+        soundCount = result[0] ? result[0].count : 0;
+        Comment.aggregate(
+          [
+            { $match: { author: user._id } },
+            {
+              $group: {
+                _id: "$author",
+                count: { $sum: 1 },
+              },
+            },
+          ],
+          function (err, result) {
+            if (err) {
+              return next(err);
+            }
+            commentCount = result[0] ? result[0].count : 0;
+
+            user.soundsPosted = soundCount;
+            user.commentsPosted = commentCount;
+            res.send({
+              _id: user._id,
+              username: user.username,
+              soundsPosted: user.soundsPosted,
+              commentsPosted: user.commentsPosted,
+              email: user.email,
+            });
+          }
+        );
       }
     );
-    Comment.aggregate(
-      [
-        {
-          $group: {
-            _id: "$author",
-            count: { $sum: 1 },
-          },
-        },
-      ],
-      function (err, result) {
-        if (err) {
-          return next(err);
-        }
-        result[0]? user.commentsPosted = result[0].count : user.commentsPosted = 0;
-      }
-    ).then(() => {
-    res.send({
-      id: user._id,
-      username: user.username,
-      soundsPosted: user.soundsPosted,
-      commentsPosted: user.commentsPosted,
-      email: user.email,
-    });
-  });
   });
 });
 
 // CREATE NEW USER
- 
+
 /**
  * @api {post} /users Create a new user
  * @apiGroup User
@@ -146,16 +149,14 @@ router.post("/", function (req, res, next) {
   });
 });
 
-
-
-// MODIFY A USER 
+// MODIFY A USER
 
 /**
  * @api {patch} /users/:username Modify a user
  * @apiGroup User
  * @apiName ModifyUser
  * @apiParam {String} username Username of the user
- * 
+ *
  * @apiSuccess {String} informations Informations reçues
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
@@ -206,18 +207,19 @@ router.delete("/:username", authenticate, function (req, res, next) {
       return next(err);
     }
     if (req.currentUserRole === "admin" || req.currentUserId == user._id) {
-      User.findOneAndDelete({username: req.params.username}, function (err, user) {
-        if (err) {
-          return next(err);
+      User.findOneAndDelete(
+        { username: req.params.username },
+        function (err, user) {
+          if (err) {
+            return next(err);
+          }
+          res.status(200).send("User deleted successfully!");
         }
-        res.status(200).send("User deleted successfully!");
-      });
+      );
     } else {
       res.sendStatus(401);
     }
   });
 });
-
-
 
 export default router;

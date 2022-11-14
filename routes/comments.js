@@ -3,6 +3,7 @@ import Comment from "../models/Comment.js";
 import { authenticate } from "./auth.js";
 import mongoose from "mongoose";
 const User = mongoose.models.User;
+const Sound = mongoose.models.Sound;
 
 const router = express.Router();
 
@@ -39,20 +40,35 @@ router.get("/", authenticate, function (req, res, next) {
   let limit = 10;
   const maxLimit = 100;
   const minLimit = 1;
+  let maxOffset = Comment.countDocuments();
+  const minOffset = 0;
 
   if (req.query.sound) {
+    Sound.findById(req.query.sound, function (err, sound) {
+      if (err || !sound) {
+        if (!sound) {
+          err = new Error("Sound not found");
+          err.status = 404;
+        }
+        return next(err);
+      }
     query.sound = req.query.sound;
+    });
   }
   if (req.query.user) {
     query.author = req.query.user;
-  }
-  if (req.query.offset) {
-    offset = req.query.offset;
   }
   if (req.query.limit) {
     limit = req.query.limit;
     limit = limit > maxLimit ? maxLimit : limit;
     limit = limit < minLimit ? minLimit : limit;
+    maxOffset -= limit;
+  }
+  if (req.query.offset) {
+    maxOffset = Comment.countDocuments(query) - limit;
+    offset = req.query.offset;
+    offset = offset > maxOffset ? maxOffset : offset;
+    offset = offset < minOffset ? minOffset : offset;
   }
 
   Comment.find(query)
@@ -65,24 +81,28 @@ router.get("/", authenticate, function (req, res, next) {
         return next(err);
       }
       res.send(comments);
-    }
-  );
+    });
 });
 
 // CREATE A NEW COMMENT
-router.post("/", authenticate,  function (req, res, next) {
-  const authorUsename = req.body.author;
-  const author = User.find({ username: authorUsename });
-  const comment = new Comment({
-    sound: req.body.sound,
-    author: author._id,
-    comment: req.body.comment
-  });
-  comment.save(function (err, comment) {
+router.post("/", authenticate, function (req, res, next) {
+  const authorUsername = req.body.author;
+  User.findOne({ username: authorUsername }).then((user, err) => {
     if (err) {
       return next(err);
     }
-    res.send(comment);
+    const comment = new Comment({
+      sound: req.body.sound,
+      author: user._id,
+      comment: req.body.comment
+    });
+    comment.save(function (err, comment) {
+      if (err) {
+        console.log(err)
+        return next(err);
+      }
+      res.send(comment);
+    });
   });
 });
 
@@ -94,12 +114,12 @@ router.patch("/:id", authenticate, function (req, res, next) {
     Comment.findByIdAndUpdate(req.params.id, req.body, function (err, comment) {
       if (err || !comment) {
         if (!comment) {
-            err = new Error("Comment not found");
-            err.status = 404;
+          err = new Error("Comment not found");
+          err.status = 404;
         }
-    return next(err);
-    }
-      res.send(comment);
+        return next(err);
+      }
+      res.send("Comment updated");
     });
   } else {
     res.status(401).send("You are not authorized to edit this comment");
@@ -109,15 +129,18 @@ router.patch("/:id", authenticate, function (req, res, next) {
 // DELETE A COMMENT
 router.delete("/:id", authenticate, function (req, res, next) {
   const commentToDelete = Comment.findById(req.params.id);
-  if (commentToDelete.author === req.currentUserId || req.currentUserRole === "admin") {
+  if (
+    commentToDelete.author === req.currentUserId ||
+    req.currentUserRole === "admin"
+  ) {
     Comment.findByIdAndDelete(req.params.id, function (err, comment) {
       if (err || !comment) {
         if (!comment) {
-            err = new Error("Comment not found");
-            err.status = 404;
+          err = new Error("Comment not found");
+          err.status = 404;
         }
-    return next(err);
-    }
+        return next(err);
+      }
       res.send("Comment deleted");
     });
   } else {
@@ -125,5 +148,4 @@ router.delete("/:id", authenticate, function (req, res, next) {
   }
 });
 
-  
-  export default router;
+export default router;
