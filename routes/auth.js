@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import express from "express";
 import jwt from "jsonwebtoken";
-import User from "../models/user.js";
+import User from "../models/User.js";
 import * as config from "../config.js";
 const secretKey = config.jwtSecret;
 
