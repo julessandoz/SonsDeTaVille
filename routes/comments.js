@@ -66,24 +66,28 @@ router.get("/", authenticate, function (req, res, next) {
         return next(err);
       }
       res.send(comments);
-    }
-  );
+    });
 });
 
 // CREATE A NEW COMMENT
-router.post("/", authenticate,  function (req, res, next) {
-  const authorUsename = req.body.author;
-  const author = User.find({ username: authorUsename });
-  const comment = new Comment({
-    sound: req.body.sound,
-    author: author._id,
-    comment: req.body.comment
-  });
-  comment.save(function (err, comment) {
+router.post("/", authenticate, function (req, res, next) {
+  const authorUsername = req.body.author;
+  User.findOne({ username: authorUsername }).then((user, err) => {
     if (err) {
       return next(err);
     }
-    res.send(comment);
+    const comment = new Comment({
+      sound: req.body.sound,
+      author: user._id,
+      comment: req.body.comment
+    });
+    comment.save(function (err, comment) {
+      if (err) {
+        console.log(err)
+        return next(err);
+      }
+      res.send(comment);
+    });
   });
 });
 
@@ -95,11 +99,11 @@ router.patch("/:id", authenticate, function (req, res, next) {
     Comment.findByIdAndUpdate(req.params.id, req.body, function (err, comment) {
       if (err || !comment) {
         if (!comment) {
-            err = new Error("Comment not found");
-            err.status = 404;
+          err = new Error("Comment not found");
+          err.status = 404;
         }
-    return next(err);
-    }
+        return next(err);
+      }
       res.send(comment);
     });
   } else {
@@ -110,15 +114,18 @@ router.patch("/:id", authenticate, function (req, res, next) {
 // DELETE A COMMENT
 router.delete("/:id", authenticate, function (req, res, next) {
   const commentToDelete = Comment.findById(req.params.id);
-  if (commentToDelete.author === req.currentUserId || req.currentUserRole === "admin") {
+  if (
+    commentToDelete.author === req.currentUserId ||
+    req.currentUserRole === "admin"
+  ) {
     Comment.findByIdAndDelete(req.params.id, function (err, comment) {
       if (err || !comment) {
         if (!comment) {
-            err = new Error("Comment not found");
-            err.status = 404;
+          err = new Error("Comment not found");
+          err.status = 404;
         }
-    return next(err);
-    }
+        return next(err);
+      }
       res.send("Comment deleted");
     });
   } else {
@@ -126,5 +133,4 @@ router.delete("/:id", authenticate, function (req, res, next) {
   }
 });
 
-  
-  export default router;
+export default router;
