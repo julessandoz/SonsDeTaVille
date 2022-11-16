@@ -4,6 +4,7 @@ import { authenticate } from "./auth.js";
 import mongoose from "mongoose";
 
 const User = mongoose.models.User;
+const Category = mongoose.models.Category;
 
 const router = express.Router();
 import multer from "multer";
@@ -46,7 +47,6 @@ const upload = multer({ storage: storage });
  *  }
  * ]
  */
-
 
 // GET LIST OF SOUNDS THAT MATCH THE QUERY PARAMETERS
 router.get("/", authenticate, function (req, res, next) {
@@ -118,34 +118,14 @@ router.get("/", authenticate, function (req, res, next) {
  * @api {post} /sounds Create a new sound
  * @apiName CreateSound
  * @apiGroup Sounds
- * @apiBody {String} title Title of the sound
- * @apiBody {String} description Description of the sound
  * @apiBody {String} category Category of the sound
  * @apiBody {String} location Location of the sound
- * @apiBody {String} file File of the sound
- * @apiSuccess {String} title Title of the sound
- * @apiSuccess {String} description Description of the sound
- * @apiSuccess {String} category Category of the sound
- * @apiSuccess {String} location Location of the sound
- * @apiSuccess {String} file File of the sound
- * @apiSuccess {String} user User of the sound
- * @apiSuccess {String} date Date of the sound
- * @apiSuccessExample {json} Success
- * HTTP/1.1 200 OK
- *  {
- *    "title": "Sound title",
- *    "description": "Sound description",
- *    "category": "Sound category",
- *    "location": "Sound location",
- *    "file": "Sound file",
- *    "user": "Sound user",
- *    "date": "Sound date"
- *  }
- * @apiSuccessExample {json} Saved sound
+ * @apiBody {File} file File of the sound
+ * @apiSuccess {String} Message Sound successfully created
+ * @apiSuccessExample {text} Saved sound
  * HTTP/1.1 201 Created
- *  {
- *    message: "Sound saved successfully"
- *  }
+ * 
+ * Sound successfully created
  */
 router.post(
   "/",
@@ -154,21 +134,30 @@ router.post(
   function (req, res, next) {
     const location = JSON.parse(req.body.location);
     const { lat, lng } = location;
-    const sound = new Sound({
-      location: {
-        type: "Point",
-        coordinates: [lng, lat],
-      },
-      category: req.body.category,
-      user: req.currentUserId,
-      date: new Date(),
-      sound: req.file.buffer,
-    });
-    sound.save(function (err, savedSound) {
-      if (err) {
+    Category.findOne({ name: req.body.category }, function (err, cat) {
+      if (err || !cat) {
+        if (!cat) {
+          err = new Error("Category not found");
+          err.status = 404;
+        }
         return next(err);
       }
-      res.status(201).send(savedSound);
+      const sound = new Sound({
+        location: {
+          type: "Point",
+          coordinates: [lat, lng],
+        },
+        category: cat._id,
+        user: req.currentUserId,
+        date: new Date(),
+        sound: req.file.buffer,
+      });
+      sound.save(function (err, savedSound) {
+        if (err) {
+          return next(err);
+        }
+        res.status(201).send("Sound saved successfully");
+      });
     });
   }
 );
@@ -189,19 +178,16 @@ router.post(
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  *  {
- *    "title": "Sound title",
- *    "description": "Sound description",
  *    "category": "Sound category",
  *    "location": "Sound location",
  *    "file": "Sound file",
  *    "user": "Sound user",
  *    "date": "Sound date"
  *  }
- * @apiErrorExample {json} Sound not found
+ * @apiErrorExample {text} Sound not found
  * HTTP/1.1 404 Not Found
- *  {
- *    "error": "SoundNotFound"
- *  }
+ *  
+ * Sound not found
  * */
 router.get("/:id", authenticate, function (req, res, next) {
   Sound.findById(req.params.id)
@@ -234,7 +220,7 @@ router.get("/data/:id", authenticate, function (req, res, next) {
 
 // UPDATE A SOUND'S CATEGORY BY ID
 /**
- * @api {put} /sounds/:id Update a sound's category by id
+ * @api {patch} /sounds/:id Update a sound's category by id
  * @apiName UpdateSoundCategoryById
  * @apiGroup Sounds
  * @apiParam {String} id Sound id
@@ -294,7 +280,7 @@ router.patch("/:id", authenticate, function (req, res, next) {
  * @apiGroup Sounds
  * @apiParam {String} id Sound id
  * @apiSuccessExample {json} Success
- * HTTP/1.1 204 Deleted 
+ * HTTP/1.1 204 Deleted
  * {
  *    "messafe": "Sound deleted successfully"
  *  }

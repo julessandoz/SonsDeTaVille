@@ -126,24 +126,18 @@ router.get("/:username", authenticate, function (req, res, next) {
  * @apiName CreateUser
  * @apiBody {String{2..20}} username User username
  * @apiBody {String} email User email
- * @apiBody {String} password User password
+ * @apiBody {String{8+}} password User password
  * @apiParamExample {json} Request-Example:
  * {
  * "username": "Bowser",
  * "email": "king@tendo.jp",
  * "password": "123456",
  * }
- * @apiSuccess {String} username User username
- * @apiSuccess {String} email User email
- * @apiSuccess {Number} __v User version
- * @apiSuccessExample {json} Success
+ * @apiSuccess {String} Message User successfully created
+ * @apiSuccessExample {text} Success
  *  HTTP/1.1 200 OK
- * {
- * "username": "Bowser",
- * "email": "king@tendo.jp",
- * "password": "123456",
- * "__v": 0
- * }
+ * 
+ * User successfully created
  */
 
 router.post("/", function (req, res, next) {
