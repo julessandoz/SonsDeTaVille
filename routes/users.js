@@ -49,8 +49,8 @@ router.get("/", authenticate, function (req, res, next) {
  * @apiParam {String {required}} username User username
  * @apiSuccess {String} _id User id
  * @apiSuccess {String} username User username
- * @apiSucess {Number} sounds total of sounds posted
- * @apiSucess {Number} comments total of comments posted
+ * @apiSuccess {Number} sounds total of sounds posted
+ * @apiSuccess {Number} comments total of comments posted
  * @apiSuccess {String} email User email
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
