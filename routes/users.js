@@ -17,7 +17,6 @@ const router = express.Router();
  * @apiSuccess {String} users._id User id
  * @apiSuccess {String} users.username User username
  * @apiSuccess {String} users.email User email
- * @apiSuccess {Boolean} users.admin User admin
  * @apiSuccessExample {json} Success
  *  HTTP/1.1 200 OK
  * [
@@ -25,7 +24,6 @@ const router = express.Router();
  * "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
  * "username": "Mario",
  * "email": "mario@tendo.jp"
- * "admin": false,
  * "__v": 0
  * }
  * ]
@@ -45,23 +43,25 @@ router.get("/", authenticate, function (req, res, next) {
 // FIND USER BY USERNAME
 
 /**
- * @api {get} /users/:username Find a user by username(email)
+ * @api {get} /users/:username Find a user by username
  * @apiGroup Users
  * @apiName FindUser
- * @apiParam {String} username User username
+ * @apiParam {String {required}} username User username
  * @apiSuccess {String} _id User id
  * @apiSuccess {String} username User username
+ * @apiSuccess {Number} sounds total of sounds posted
+ * @apiSuccess {Number} comments total of comments posted
  * @apiSuccess {String} email User email
- * @apiSuccess {Boolean} admin User admin
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
- * "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
- * "username": "Luigi",
- * "email": "luigi@tendo.jp"
- * "admin": false,
- * "__v": 0
+ * "_id": "637202823dff67cbfc51a424",
+ * "username": "audreycks",
+ * "soundsPosted": 0,
+ * "commentsPosted": 0,
+ * "email": "audrey.csikos@heig-vd.ch"
  * }
+ * 
  */
 
 router.get("/:username", authenticate, function (req, res, next) {
@@ -124,25 +124,25 @@ router.get("/:username", authenticate, function (req, res, next) {
  * @api {post} /users Create a new user
  * @apiGroup Users
  * @apiName CreateUser
- *
  * @apiBody {String{2..20}} username User username
  * @apiBody {String} email User email
  * @apiBody {String} password User password
- * @apiBody {Boolean=false} admin User admin
  * @apiParamExample {json} Request-Example:
  * {
  * "username": "Bowser",
  * "email": "king@tendo.jp",
  * "password": "123456",
- * "admin": true
  * }
- * @apiSuccess {String} informations Informations recieved
+ * @apiSuccess {String} username User username
+ * @apiSuccess {String} email User email
+ * @apiSuccess {Number} __v User version
  * @apiSuccessExample {json} Success
  *  HTTP/1.1 200 OK
  * {
- * "username": "Mario",
- * "password": "1234",
- * "email": mario@tendo.jp"
+ * "username": "Bowser",
+ * "email": "king@tendo.jp",
+ * "password": "123456",
+ * "__v": 0
  * }
  */
 
@@ -167,24 +167,19 @@ router.post("/", function (req, res, next) {
  * @apiGroup Users
  * @apiName ModifyUser
  * @apiParam {String} username Username of the user
+ * @apiBody {String} username User username
  * @apiBody {String} password User password
  * @apiBody {String} email User email
- * @apiParamExample {json} Input
- * {
- * "username": "Mario",
- * "email": "
- * "password": "1234"
- * }
- *
- * @apiSuccess {String} informations Informations recieved
+ * @apiSuccess {String} username User username
+ * @apiSuccess {String} email User email
+ * @apiSuccess {String} email User email
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
  * "username": "Mario",
  * "password": "123456",
- * "email": "
+ * "email": "mario@tendo.jp"
  * }
- *
  * @apiErrorExample {json} Error 404
  * HTTP/1.1 404 Not Found
  * {
@@ -194,7 +189,7 @@ router.post("/", function (req, res, next) {
  * @apiErrorExample {json} Error 401
  * HTTP/1.1 401 Unauthorized
  * {
- * "message": "Unauthorized"
+ * "message": "Username cannot be modified"
  * }
  */
 
@@ -228,7 +223,6 @@ router.patch("/:username", authenticate, function (req, res, next) {
 });
 
 // DELETE A USER
-
 /**
  * @api {delete} /users/:username Delete a user
  * @apiGroup Users
@@ -238,7 +232,7 @@ router.patch("/:username", authenticate, function (req, res, next) {
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
- * "message": "User deleted"
+ * "message": "User deleted successfully"
  * }
  * @apiErrorExample {json} Error
  * HTTP/1.1 401 Unauthorized
