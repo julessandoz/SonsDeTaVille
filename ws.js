@@ -1,5 +1,5 @@
 import { WebSocketServer } from "ws";
-import { getUserFromId } from "./routes/users.js";
+import {tokenToUser} from "./routes/auth.js";
 import mongoose from "mongoose";
 const User = mongoose.models.User;
 
@@ -10,19 +10,9 @@ export function createWSS(httpServer) {
     server: httpServer,
   });
 
-  wss.on("connection", (ws, req) => {
-  getUserFromId(req.currentUserId).then((err, user) => {
-      if (err || !user) {
-        if (!user) {
-          err = new Error("User not found");
-          err.status = 404;
-        }
-        ws.send(JSON.stringify(err));
-        ws.close();
-        return;
-      }
-      clients.push({ user: user, ws: ws });
-
+  wss.on("connection", async (ws, req) => {
+    const userId = tokenToUser(req.headers.authorization.split(" ")[1]);
+      clients.push({ userId: userId, ws: ws });
       ws.on("message", (message) => {
         ws.send("Received your message: " + message);
       });
@@ -31,16 +21,14 @@ export function createWSS(httpServer) {
         clients.splice(clients.indexOf(ws), 1);
       });
     });
-  });
-}
+  };
 
 export function sendMessageToUser(message, userId, code) {
     // Find the client with the given ID.
-    const client = clients.find((client) => client.id.equals(userId));
-
+    const client = clients.find((client) => client.userId == userId);
     if (client) {
         // Send the message to the client.
-        client.socket.send(JSON.stringify({
+        client.ws.send(JSON.stringify({
             message: message,
             code: code
         }));

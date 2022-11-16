@@ -122,7 +122,16 @@ router.post("/", authenticate, function (req, res, next) {
         console.log(err);
         return next(err);
       }
-      sendMessageToUser("New comment", sound.user, "newNotification");
+      User.findById(sound.user, function (err, user) {
+        if (err || !user) {
+          if (!user) {
+            err = new Error("User not found");
+            err.status = 404;
+          }
+          return next(err);
+        }
+        sendMessageToUser("New comment", user._id, "newNotification");
+      });
       res.status(201).send("Comment created");
     });
   });

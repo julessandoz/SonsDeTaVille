@@ -277,8 +277,4 @@ router.delete("/:username", authenticate, function (req, res, next) {
   });
 });
 
-export function getUserFromId(id) {
-  return User.findById(id);
-}
-
 export default router;

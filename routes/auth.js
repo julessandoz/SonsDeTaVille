@@ -31,6 +31,11 @@ export function authenticate(req, res, next) {
     });
   }
 
+export function tokenToUser(token) {
+  const payload = jwt.verify(token, secretKey);
+    return payload.sub;
+}
+
   router.post("/login", function(req, res, next) {
     // Find the user by name.
     User.findOne({ email: req.body.email }).exec(function(err, user) {
