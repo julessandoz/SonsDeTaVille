@@ -150,7 +150,7 @@ router.post("/", function (req, res, next) {
     if (err) {
       return next(err);
     }
-    res.status(201).send(savedUser);
+    res.status(201).send("User successfully created");
   });
 });
 
@@ -164,16 +164,11 @@ router.post("/", function (req, res, next) {
  * @apiBody {String} username User username
  * @apiBody {String} password User password
  * @apiBody {String} email User email
- * @apiSuccess {String} username User username
- * @apiSuccess {String} email User email
- * @apiSuccess {String} email User email
- * @apiSuccessExample {json} Success
+ * @apiSuccess {String} Message User successfully modified
+ * @apiSuccessExample {text} Success
  * HTTP/1.1 200 OK
- * {
- * "username": "Mario",
- * "password": "123456",
- * "email": "mario@tendo.jp"
- * }
+ * 
+ * User successfully modified
  * @apiErrorExample {json} Error 404
  * HTTP/1.1 404 Not Found
  * {
@@ -208,7 +203,7 @@ router.patch("/:username", authenticate, function (req, res, next) {
         if (err) {
           return next(err);
         }
-        res.send(savedUser);
+        res.send("User successfully modified");
       });
     } else {
       res.sendStatus(401);

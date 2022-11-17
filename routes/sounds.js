@@ -124,7 +124,7 @@ router.get("/", authenticate, function (req, res, next) {
  * @apiSuccess {String} Message Sound successfully created
  * @apiSuccessExample {text} Saved sound
  * HTTP/1.1 201 Created
- * 
+ *
  * Sound successfully created
  */
 router.post(
@@ -186,7 +186,7 @@ router.post(
  *  }
  * @apiErrorExample {text} Sound not found
  * HTTP/1.1 404 Not Found
- *  
+ *
  * Sound not found
  * */
 router.get("/:id", authenticate, function (req, res, next) {
@@ -225,23 +225,11 @@ router.get("/data/:id", authenticate, function (req, res, next) {
  * @apiGroup Sounds
  * @apiParam {String} id Sound id
  * @apiBody {String} category Category of the sound
- * @apiSuccess {String} title Title of the sound
- * @apiSuccess {String} description Description of the sound
- * @apiSuccess {String} category Category of the sound
- * @apiSuccess {String} location Location of the sound
- * @apiSuccess {String} file File of the sound
- * @apiSuccess {String} user User of the sound
- * @apiSuccess {String} date Date of the sound
- * @apiSuccessExample {json} Success
+ * @apiSuccess Message Sound successfully updated
+ * @apiSuccessExample {text} Success
  * HTTP/1.1 200 OK
  *  {
- *    "title": "Sound title",
- *    "description": "Sound description",
- *    "category": "Sound category",
- *    "location": "Sound location",
- *    "file": "Sound file",
- *    "user": "Sound user",
- *    "date": "Sound date"
+ *    Sound updated successfully
  *  }
  * @apiErrorExample {json} Sound not found
  * HTTP/1.1 404 Not Found
@@ -263,12 +251,20 @@ router.patch("/:id", authenticate, function (req, res, next) {
         .status(401)
         .send("You are not authorized to update this sound");
     }
-    sound.category = req.body.category;
-    sound.save(function (err, savedSound) {
-      if (err) {
+    Category.findOne({ name: req.body.category }, function (err, cat) {
+      if (err || !cat) {
+        if (!cat) {
+          err = new Error("Category not found");
+          err.status = 404;
+        }
         return next(err);
       }
-      res.send(savedSound);
+      sound.save(function (err, savedSound) {
+        if (err) {
+          return next(err);
+        }
+        res.send("Sound updated successfully");
+      });
     });
   });
 });

@@ -52,7 +52,7 @@ router.get("/", authenticate, function (req, res, next) {
  * {
  *  "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
  * "name": "Animaux",
- * "color": "red",
+ * "color": "#ff0000",
  * "__v": 0
  * }
  * ]
@@ -84,17 +84,11 @@ router.get("/:name", authenticate, function (req, res, next) {
  * @apiBody {String} name Category name
  * @apiBody {String} color Category color
  * @apiPermission admin
- * @apiSuccess {String} _id Category id
- * @apiSuccess {String} name Category name
- * @apiSuccess {String} color Category color
+ * @apiSuccess {String} Message Category successfully created
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
- * {
- * "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
- * "name": "Animaux",
- * "color": "red",
- * "__v": 0
- * }
+ * 
+ * Category successfully created
  * @apiErrorExample {json} List error
  * HTTP/1.1 401 Unauthorized
  * {
@@ -112,7 +106,7 @@ router.post("/", authenticate, function (req, res, next) {
         console.log(err);
         return next(err);
     }
-    res.status(201).send(savedCategory);
+    res.status(201).send("Category successfully created");
     });
     }
 );
@@ -124,12 +118,11 @@ router.post("/", authenticate, function (req, res, next) {
     * @apiGroup Categories
     * @apiParam {String} name Category name
     * @apiPermission admin
-    * @apiSuccess {String} message Category deleted
+    * @apiSuccess {String} Message Category successfully deleted
     * @apiSuccessExample {json} Success
     * HTTP/1.1 200 OK
-    * {
-    * "message": "Category deleted"
-    * }
+    * 
+    * Category successfully deleted
     * @apiErrorExample {json} Category not found
     * HTTP/1.1 404 Not Found
     * {
@@ -142,14 +135,10 @@ router.delete("/:name", authenticate, function (req, res, next) {
         return res.status(401).send("Unauthorized");
     }
     Category.findOneAndDelete({ name: req.params.name }, function (err, category) {
-        if (err || !category) {
-            if (!category) {
-                err = new Error("Category not found");
-                err.status = 404;
-            }
+        if (err) {
         return next(err);
         }
-        res.send(category);
+        res.send("Category successfully deleted");
     });
     });
 

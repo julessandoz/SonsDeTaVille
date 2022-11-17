@@ -97,7 +97,7 @@ router.get("/", authenticate, function (req, res, next) {
  * @apiSuccessExample {json} Success
  *  HTTP/1.1 200 OK
  * {
- * "message": "Comment created"
+ * "message": "Comment successfully created"
  * }
  */
 
@@ -132,7 +132,7 @@ router.post("/", authenticate, function (req, res, next) {
         }
         sendMessageToUser("New comment", user._id, "newNotification");
       });
-      res.status(201).send("Comment created");
+      res.status(201).send("Comment successfully created");
     });
   });
 });
@@ -148,7 +148,7 @@ router.post("/", authenticate, function (req, res, next) {
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
- * "message": "Comment updated"
+ * "message": "Comment successfully updated"
  * }
  * @apiError CommentNotFound The id of the comment was not found.
  * @apiErrorExample {json} Error
@@ -175,7 +175,7 @@ router.patch("/:id", authenticate, function (req, res, next) {
         }
         return next(err);
       }
-      res.send("Comment updated");
+      res.send("Comment successfully updated");
     });
   } else {
     res.status(401).send("You are not authorized to edit this comment");
@@ -192,7 +192,7 @@ router.patch("/:id", authenticate, function (req, res, next) {
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
- * "message": "Comment deleted"
+ * "message": "Comment successfully deleted"
  * }
  * @apiError (401) Unauthorized You are not authorized to delete this comment
  * @apiErrorExample {json} Unauthorized
@@ -222,7 +222,7 @@ router.delete("/:id", authenticate, function (req, res, next) {
         }
         return next(err);
       }
-      res.send("Comment deleted");
+      res.send("Comment successfully deleted");
     });
   } else {
     res.status(401).send("You are not authorized to delete this comment");
