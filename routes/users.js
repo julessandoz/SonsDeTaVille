@@ -7,7 +7,20 @@ const Comment = mongoose.models.Comment;
 
 const router = express.Router();
 
-// GET LIST OF ALL USERS
+/**
+ * @api {options} /users Get allowed methods
+ * @apiName OptionsUsers
+ * @apiGroup Users
+ * @apiDescription Get allowed methods
+ * @apiSuccessExample {text} Success-Response:
+ * HTTP/1.1 204 No Content
+ * Allow: GET, POST, PATCH, DELETE, OPTIONS
+ * 
+ */
+router.options("/", authenticate, function (req, res, next) {
+  res.set("Allow", "GET, POST, PATCH, DELETE, OPTIONS");
+  res.status(204).send();
+});
 
 /**
  * @api {get} /users Get a list of all users
@@ -39,8 +52,6 @@ router.get("/", authenticate, function (req, res, next) {
       res.send(users);
     });
 });
-
-// FIND USER BY USERNAME
 
 /**
  * @api {get} /users/:username Find a user by username
@@ -118,8 +129,6 @@ router.get("/:username", authenticate, function (req, res, next) {
   });
 });
 
-// CREATE NEW USER
-
 /**
  * @api {post} /users Create a new user
  * @apiGroup Users
@@ -153,8 +162,6 @@ router.post("/", function (req, res, next) {
     res.status(201).send("User successfully created");
   });
 });
-
-// MODIFY A USER
 
 /**
  * @api {patch} /users/:username Modify a user
@@ -211,7 +218,6 @@ router.patch("/:username", authenticate, function (req, res, next) {
   });
 });
 
-// DELETE A USER
 /**
  * @api {delete} /users/:username Delete a user
  * @apiGroup Users

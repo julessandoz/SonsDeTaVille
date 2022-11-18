@@ -9,6 +9,21 @@ const Sound = mongoose.models.Sound;
 const router = express.Router();
 
 /**
+ * @api {options} /comments Get allowed methods
+ * @apiName OptionsComments
+ * @apiGroup Comments
+ * @apiDescription Get allowed methods
+ * @apiSuccessExample {text} Success-Response:
+ * HTTP/1.1 204 No Content
+ * Allow: GET, POST, PATCH, DELETE, OPTIONS
+ *
+ */
+router.options("/", authenticate, function (req, res, next) {
+  res.set("Allow", "GET, POST, PATCH, DELETE, OPTIONS");
+  res.status(204).send();
+});
+
+/**
  * @api {get} /comments Get all comments
  * @apiName GetComments
  * @apiGroup Comments
@@ -34,7 +49,6 @@ const router = express.Router();
  * ]
  */
 
-// GET LIST OF ALL COMMENTS THAT MATCH THE QUERY PARAMETERS
 router.get("/", authenticate, function (req, res, next) {
   let query = {};
   let offset = 0;
@@ -85,7 +99,6 @@ router.get("/", authenticate, function (req, res, next) {
     });
 });
 
-// CREATE A NEW COMMENT
 /**
  * @api {post} https://sons-de-ta-ville.onrender.com/comments Create a new comment
  * @apiGroup Comments
@@ -103,42 +116,48 @@ router.get("/", authenticate, function (req, res, next) {
 
 router.post("/", authenticate, function (req, res, next) {
   const author = req.currentUserId;
-    const comment = new Comment({
-      sound: req.body.sound,
-      author: author,
-      comment: req.body.comment
-    });
-    
-    Sound.findById(req.body.sound, function (err, sound) {
-      if (err || !sound) {
-        if (!sound) {
-          err = new Error("Sound not found");
-          err.status = 404;
-        }
-        return next(err);
+  const comment = new Comment({
+    sound: req.body.sound,
+    author: author,
+    comment: req.body.comment,
+  });
+
+  Sound.findById(req.body.sound, function (err, sound) {
+    if (err || !sound) {
+      if (!sound) {
+        err = new Error("Sound not found");
+        err.status = 404;
       }
+      return next(err);
+    }
     comment.save(function (err, comment) {
       if (err) {
         console.log(err);
         return next(err);
       }
-      User.findById(sound.user, function (err, user) {
-        if (err || !user) {
-          if (!user) {
-            err = new Error("User not found");
-            err.status = 404;
-          }
+      // add comment to sound
+      sound.comments.push(comment._id);
+      sound.save(function (err, sound) {
+        if (err) {
+          console.log(err);
           return next(err);
         }
-        sendMessageToUser("New comment", user._id, "newNotification");
+        User.findById(sound.user, function (err, user) {
+          if (err || !user) {
+            if (!user) {
+              err = new Error("User not found");
+              err.status = 404;
+            }
+            return next(err);
+          }
+          sendMessageToUser("New comment", user._id, "newNotification");
+        });
+        res.status(201).send("Comment successfully created");
       });
-      res.status(201).send("Comment successfully created");
     });
   });
 });
 
-
-// UPDATE A COMMENT
 /**
  * @api {patch} /comments/:idComment Modify a comment
  * @apiGroup Comments
@@ -182,7 +201,6 @@ router.patch("/:id", authenticate, function (req, res, next) {
   }
 });
 
-// DELETE A COMMENT
 /**
  * @api {delete} /comments/:idComment Delete a comment
  * @apiGroup Comments

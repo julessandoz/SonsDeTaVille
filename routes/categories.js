@@ -5,8 +5,20 @@ import Category from "../models/Category.js";
 
 const router = express.Router();
 
+/**
+ * @api {options} /categories Get allowed methods
+ * @apiName OptionsCategories
+ * @apiGroup Categories
+ * @apiDescription Get allowed methods
+ * @apiSuccessExample {text} Success-Response:
+ * HTTP/1.1 204 No Content
+ * Allow: GET, POST, DELETE, OPTIONS
+ */
+router.options("/", authenticate, function (req, res, next) {
+  res.set("Allow", "GET, POST, DELETE, OPTIONS");
+  res.status(204).send();
+});
 
-// GET LIST OF ALL CATEGORIES
 /**
  * @api {get} /categories Get all categories
  * @apiName GetCategories
@@ -28,15 +40,16 @@ const router = express.Router();
  */
 
 router.get("/", authenticate, function (req, res, next) {
-  Category.find().sort("name").exec(function (err, categories) {
-    if (err) {
-      return next(err);
-    }
-    res.send(categories);
-  });
+  Category.find()
+    .sort("name")
+    .exec(function (err, categories) {
+      if (err) {
+        return next(err);
+      }
+      res.send(categories);
+    });
 });
 
-// FIND CATEGORY BY NAME
 /**
  * @api {get} /categories/:name Get a category by name
  * @apiName GetCategoryByName
@@ -64,19 +77,18 @@ router.get("/", authenticate, function (req, res, next) {
  */
 
 router.get("/:name", authenticate, function (req, res, next) {
-    Category.findOne({ name: req.params.name }, function (err, category) {
-        if (err || !category) {
-            if (!category) {
-                err = new Error("Category not found");
-                err.status = 404;
-            }
-        return next(err);
-        }
-        res.send(category);
-    });
-    });
+  Category.findOne({ name: req.params.name }, function (err, category) {
+    if (err || !category) {
+      if (!category) {
+        err = new Error("Category not found");
+        err.status = 404;
+      }
+      return next(err);
+    }
+    res.send(category);
+  });
+});
 
-// CREATE NEW CATEGORY
 /**
  * @api {post} /categories Create a new category
  * @apiName CreateCategory
@@ -87,7 +99,7 @@ router.get("/:name", authenticate, function (req, res, next) {
  * @apiSuccess {String} Message Category successfully created
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
- * 
+ *
  * Category successfully created
  * @apiErrorExample {json} List error
  * HTTP/1.1 401 Unauthorized
@@ -97,51 +109,50 @@ router.get("/:name", authenticate, function (req, res, next) {
  */
 
 router.post("/", authenticate, function (req, res, next) {
-    if (req.currentUserRole != "admin") {
-        return res.status(401).send("Unauthorized");
-    }
-    const category = new Category({ name: req.body.name, color: req.body.color });
-    category.save(function (err, savedCategory) {
+  if (req.currentUserRole != "admin") {
+    return res.status(401).send("Unauthorized");
+  }
+  const category = new Category({ name: req.body.name, color: req.body.color });
+  category.save(function (err, savedCategory) {
     if (err) {
-        console.log(err);
-        return next(err);
+      console.log(err);
+      return next(err);
     }
     res.status(201).send("Category successfully created");
-    });
-    }
-);
+  });
+});
 
-// DELETE CATEGORY
 /**
-    * @api {delete} /categories/:name Delete a category
-    * @apiName DeleteCategory
-    * @apiGroup Categories
-    * @apiParam {String} name Category name
-    * @apiPermission admin
-    * @apiSuccess {String} Message Category successfully deleted
-    * @apiSuccessExample {json} Success
-    * HTTP/1.1 200 OK
-    * 
-    * Category successfully deleted
-    * @apiErrorExample {json} Category not found
-    * HTTP/1.1 404 Not Found
-    * {
-    * "message": "Category not found"
-    * }
-*/
+ * @api {delete} /categories/:name Delete a category
+ * @apiName DeleteCategory
+ * @apiGroup Categories
+ * @apiParam {String} name Category name
+ * @apiPermission admin
+ * @apiSuccess {String} Message Category successfully deleted
+ * @apiSuccessExample {json} Success
+ * HTTP/1.1 200 OK
+ *
+ * Category successfully deleted
+ * @apiErrorExample {json} Category not found
+ * HTTP/1.1 404 Not Found
+ * {
+ * "message": "Category not found"
+ * }
+ */
 
 router.delete("/:name", authenticate, function (req, res, next) {
-    if (req.currentUserRole != "admin") {
-        return res.status(401).send("Unauthorized");
-    }
-    Category.findOneAndDelete({ name: req.params.name }, function (err, category) {
-        if (err) {
+  if (req.currentUserRole != "admin") {
+    return res.status(401).send("Unauthorized");
+  }
+  Category.findOneAndDelete(
+    { name: req.params.name },
+    function (err, category) {
+      if (err) {
         return next(err);
-        }
-        res.send("Category successfully deleted");
-    });
-    });
-
-
+      }
+      res.send("Category successfully deleted");
+    }
+  );
+});
 
 export default router;
