@@ -36,6 +36,19 @@ export function tokenToUser(token) {
     return payload.sub;
 }
 
+/**
+ * @api {post} /auth/login Login
+ * @apiGroup Auth
+ * @apiName Login
+ * @apiBody {String} email Email address of the user
+ * @apiBody {String} password Password of the user
+ * @apiSuccess {String} token JWT token
+ * @apiSuccessExample {json} Success
+ * HTTP/1.1 200 OK
+ * {
+ * token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+ * }
+ */
   router.post("/login", function(req, res, next) {
     // Find the user by name.
     User.findOne({ email: req.body.email }).exec(function(err, user) {
