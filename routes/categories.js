@@ -115,7 +115,6 @@ router.post("/", authenticate, function (req, res, next) {
   const category = new Category({ name: req.body.name, color: req.body.color });
   category.save(function (err, savedCategory) {
     if (err) {
-      console.log(err);
       return next(err);
     }
     res.status(201).send("Category successfully created");
@@ -150,7 +149,7 @@ router.delete("/:name", authenticate, function (req, res, next) {
       if (err) {
         return next(err);
       }
-      res.send("Category successfully deleted");
+      res.status(200).send("Category successfully deleted");
     }
   );
 });

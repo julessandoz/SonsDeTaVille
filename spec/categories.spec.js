@@ -29,8 +29,7 @@ describe('POST /categories', function() {
     color: '#0000'
   })
   .expect(201)
-  .expect('Content-Type', /json/)
-  expect(res.body).toBeObject();
+  .expect('Content-Type', /text/)
     });
   });
   
@@ -62,8 +61,7 @@ describe('DELETE /categories/:name', function() {
   .delete(`/categories/${Car.name}`)
   .set('Authorization', `Bearer ${token}`)
   .expect(200)
-  .expect('Content-Type', /json/)
-  expect(res.body).toBeObject();
+  .expect('Content-Type', /text/)
     });
   });
 
