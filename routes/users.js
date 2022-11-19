@@ -17,7 +17,7 @@ const router = express.Router();
  * Allow: GET, POST, PATCH, DELETE, OPTIONS
  * 
  */
-router.options("/", authenticate, function (req, res, next) {
+router.options("/", function (req, res, next) {
   res.set("Allow", "GET, POST, PATCH, DELETE, OPTIONS");
   res.status(204).send();
 });
@@ -77,7 +77,11 @@ router.get("/", authenticate, function (req, res, next) {
 
 router.get("/:username", authenticate, function (req, res, next) {
   User.findOne({ username: req.params.username }, function (err, user) {
-    if (err) {
+    if (err || !user) {
+      if (!user) {
+        err = new Error("User not found");
+        err.status = 404;
+      }
       return next(err);
     }
     let soundCount;
