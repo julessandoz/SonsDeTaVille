@@ -46,7 +46,7 @@ test('should not connect user with wrong password', async function(){
 })
 .expect(401)
 });
+});
 afterAll(async () => {
     await mongoose.disconnect();
-  });
   });
