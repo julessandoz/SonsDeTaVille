@@ -100,12 +100,11 @@ router.get("/", authenticate, function (req, res, next) {
 });
 
 /**
- * @api {post} https://sons-de-ta-ville.onrender.com/comments Create a new comment
+ * @api {post} /comments Create a new comment
  * @apiGroup Comments
  * @apiName CreateComment
  * @apiBody {String} sound  sound id
  * @apiBody {String} comment Comment text
- * @apiSampleRequest https://sons-de-ta-ville.onrender.com/comments
  * @apiSuccess {String} message Comment created
  * @apiSuccessExample {json} Success
  *  HTTP/1.1 200 OK
