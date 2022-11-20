@@ -29,7 +29,6 @@ router.options("/", authenticate, function (req, res, next) {
  * @api {get} /sounds Get all sounds
  * @apiName GetSounds
  * @apiGroup Sounds
- * @apiVersion 1.0.0
  * @apiDescription Get all sounds
  * @apiParam {Object} [location] Location object ({"lat": 46.78123, "lng": 6.64731, "radius": 1000}) radius is in meters and optional
  * @apiParam {String} [category] Category id
