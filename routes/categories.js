@@ -14,7 +14,7 @@ const router = express.Router();
  * HTTP/1.1 204 No Content
  * Allow: GET, POST, DELETE, OPTIONS
  */
-router.options("/", authenticate, function (req, res, next) {
+router.options("/", function (req, res, next) {
   res.set("Allow", "GET, POST, DELETE, OPTIONS");
   res.status(204).send();
 });

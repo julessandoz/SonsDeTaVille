@@ -8,7 +8,7 @@ import User from "../models/User.js"
 
  // GET USERS ROUTE OPTIONS TEST
 describe('OPTIONS /users', function() {
-  test("should return a list of options", async function() {
+  test("should return a list of allowed methods without needing a token", async function() {
     const res = await supertest(app)
       .options('/users')
       .expect(204)

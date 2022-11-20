@@ -7,6 +7,16 @@ import Category from "../models/Category.js"
 
 beforeEach(cleanUpDatabase);
 
+// GET CATEGORIES ROUTE OPTIONS TEST
+describe('OPTIONS /categories', function(){
+  test('should return a list of allowed methods without needing a token', async function(){
+    const res = await supertest(app)
+    .options('/categories')
+    .expect(204)
+    .expect('Allow', 'GET, POST, DELETE, OPTIONS')
+  });
+});
+
 // CREATE CATEGORY TEST
 describe('POST /categories', function() {
     let Jules;
@@ -19,7 +29,7 @@ describe('POST /categories', function() {
         })
       ]);
     }); 
-    it('should create a category', async function(){
+    test('should create a category', async function(){
     const token = await generateValidJwt(Jules, true);// Must be an Admin 
     const res = await supertest(app)
   .post('/categories')
@@ -31,6 +41,19 @@ describe('POST /categories', function() {
   .expect(201)
   .expect('Content-Type', /text/)
     });
+    test('should not create a category if user is not admin', async function(){
+    const token = await generateValidJwt(Jules);
+    const res = await supertest(app)
+  .post('/categories')
+  .set('Authorization', `Bearer ${token}`)
+  .send({
+    name: 'Nature',
+    color: '#0000'
+  })
+  .expect(401)
+  .expect('Content-Type', /text/)
+  .expect('Unauthorized')
+});
   });
   
   
@@ -55,13 +78,22 @@ describe('DELETE /categories/:name', function() {
             })    
       ]);
     }); 
-    it('should delete a category', async function(){
+    test('should delete a category', async function(){
     const token = await generateValidJwt(Jules, true);// Must be an Admin 
     const res = await supertest(app)
   .delete(`/categories/${Car.name}`)
   .set('Authorization', `Bearer ${token}`)
   .expect(200)
   .expect('Content-Type', /text/)
+    });
+    test('should not delete a category if user is not admin', async function(){
+    const token = await generateValidJwt(Jules);
+    const res = await supertest(app)
+  .delete(`/categories/${Car.name}`)
+  .set('Authorization', `Bearer ${token}`)
+  .expect(401)
+  .expect('Content-Type', /text/)
+  .expect('Unauthorized')
     });
   });
 
@@ -137,7 +169,7 @@ describe('GET /categories/:name', function() {
             })    
       ]);
     }); 
-    it('should find a categoriy by her name', async function(){
+    test('should find a categoriy by her name', async function(){
     const token = await generateValidJwt(Jules);
     const res = await supertest(app)
   .get(`/categories/${Car.name}`)
@@ -147,6 +179,15 @@ describe('GET /categories/:name', function() {
   expect(res.body).toBeObject();
   expect(res.body._id).toEqual(Car.id)
   expect(res.body.name).toEqual(Car.name)
+    });
+    test('should return 404 if category not found', async function(){
+    const token = await generateValidJwt(Jules);
+    const res = await supertest(app)
+  .get(`/categories/NotACategory`)
+  .set('Authorization', `Bearer ${token}`)
+  .expect(404)
+  .expect('Content-Type', /text/)
+  .expect('Category not found')
     });
   });
 
