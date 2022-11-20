@@ -31,8 +31,8 @@ function validateGeoJsonCoordinates(value) {
     Array.isArray(value) &&
     value.length >= 2 &&
     value.length <= 3 &&
-    isLongitude(value[0]) &&
-    isLatitude(value[1])
+    isLongitude(value[1]) &&
+    isLatitude(value[0])
   );
 }
 
