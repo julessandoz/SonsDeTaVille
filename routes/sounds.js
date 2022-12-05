@@ -202,8 +202,8 @@ router.get("/", authenticate, function (req, res, next) {
  * @apiName CreateSound
  * @apiGroup Sounds
  * @apiBody {String} category Category of the sound
- * @apiBody {String} location Location of the sound
- * @apiBody {File} file File of the sound
+ * @apiBody {String} location Location of the sound Format: {"lat": 0, "lng": 0}
+ * @apiBody {File} uploaded_audio File of the sound
  * @apiSuccess {String} Message Sound successfully created
  * @apiSuccessExample {text} Saved sound
  * HTTP/1.1 201 Created
