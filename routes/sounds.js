@@ -230,7 +230,7 @@ router.post(
     const lat = req.body.lat;
     const lng = req.body.lng;
     if (!lat || !lng) {
-      err = new Error("Missing location");
+      let err = new Error("Missing location");
       err.status = 400;
       return next(err);
     }
