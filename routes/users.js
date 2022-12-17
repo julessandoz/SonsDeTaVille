@@ -1,6 +1,8 @@
 import express, { json } from "express";
 import { authenticate } from "./auth.js";
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import * as config from "../config.js";
 const User = mongoose.models.User;
 const Sound = mongoose.models.Sound;
 const Comment = mongoose.models.Comment;
@@ -148,9 +150,9 @@ router.get("/:username", authenticate, function (req, res, next) {
  * }
  * @apiSuccess {String} Message User successfully created
  * @apiSuccessExample {text} Success
- *  HTTP/1.1 200 OK
+ *  HTTP/1.1 201 Created
  * 
- * User successfully created
+ * User successfully created Email: king@tendo.jp, Username: Bowser
  */
 
 router.post("/", function (req, res, next) {
@@ -163,7 +165,7 @@ router.post("/", function (req, res, next) {
     if (err) {
       return next(err);
     }
-    res.status(201).send("User successfully created");
+    res.status(201).send(`User successfully created: Email: ${savedUser.email}, Username: ${savedUser.username}`);
   });
 });
 
@@ -171,8 +173,7 @@ router.post("/", function (req, res, next) {
  * @api {patch} /users/:username Modify a user
  * @apiGroup Users
  * @apiName ModifyUser
- * @apiParam {String} username Username of the user
- * @apiBody {String} username User username
+ * @apiParam {String} username Username of the user to modify
  * @apiBody {String} password User password
  * @apiBody {String} email User email
  * @apiSuccess {String} Message User successfully modified
@@ -191,35 +192,42 @@ router.post("/", function (req, res, next) {
  * {
  * "message": "Username cannot be modified"
  * }
+ * @apiErrorExample {json} Error 401
+ * HTTP/1.1 401 Unauthorized
+ * {
+ * "message": "Password is required"
+ * }
  */
 
-router.patch("/:username", authenticate, function (req, res, next) {
-  User.findOne({ username: req.params.username }, function (err, user) {
-    if (err || !user) {
-      if (!user) {
-        err = new Error("User not found");
-        err.status = 404;
+router.patch("/:username", authenticate, async (req, res) => {
+  try {
+    const username = req.params.username;
+    const update = {};
+    if (req.body.username) {
+      return res.status(401).send({ message: "Username cannot be modified" });
+    }
+    if (req.body.email) update.email = req.body.email;
+    if (req.body.password) {
+      if (req.body.password.length < 8) {
+        return res.status(401).send("Password must be at least 8 characters long");
       }
-      return next(err);
+      const hashedPassword = await bcrypt.hash(req.body.password, config.bcryptFactor);
+      update.password = hashedPassword;
     }
-    if (req.currentUserRole === "admin" || req.currentUserId == user._id) {
-      req.body.username
-        ? res.status(401).send("Username cannot be modified")
-        : null;
-      user.email = req.body.email ? req.body.email : user.email;
-      user.clearPassword = req.body.password
-        ? req.body.password
-        : user.clearPassword;
-      user.save(function (err, savedUser) {
-        if (err) {
-          return next(err);
-        }
-        res.send("User successfully modified");
-      });
+
+    if (req.currentUserRole === "admin" || req.currentUserId == await User.findOne({ username: username })._id) {
+      const user = await User.findOneAndUpdate(
+        { username: username },
+        update,
+        { new: true }
+      );
+      res.send(user); 
     } else {
-      res.sendStatus(401);
+      return res.status(401).send("You are not authorized to modify this user");
     }
-  });
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 });
 
 /**
@@ -261,6 +269,18 @@ router.delete("/:username", authenticate, function (req, res, next) {
           if (err) {
             return next(err);
           }
+          // find all sounds and comments by user and delete them
+          Sound.deleteMany({ user: user._id }, function (err) {
+            if (err) {
+              return next(err);
+            }
+          });
+          Comment.deleteMany({ author: user._id }, function (err) {
+            if (err) {
+              return next(err);
+            }
+          });
+
           res.status(200).send("User deleted successfully!");
         }
       );

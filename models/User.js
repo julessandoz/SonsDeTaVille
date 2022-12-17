@@ -36,6 +36,7 @@ userSchema.set("toJSON", {
 function transformJsonUser(doc, json, options) {
   // Remove the hashed password from the generated JSON.
   delete json.password;
+  json.admin? json.role = "admin" : json.role = "user";
   delete json.admin;
   return json;
 }
