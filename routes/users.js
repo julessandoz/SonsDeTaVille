@@ -265,11 +265,15 @@ router.delete("/:username", authenticate, function (req, res, next) {
     if (req.currentUserRole === "admin" || req.currentUserId == user._id) {
       User.findOneAndDelete(
         { username: req.params.username },
-        function (err, user) {
+        async function (err, user) {
           if (err) {
             return next(err);
           }
-          // find all sounds and comments by user and delete them
+          // find all comments on sounds posted by this user and delete them
+          const soundsPosted = await Sound.find({ user: user._id});
+          const commentsOnSoundsPosted = await Comment.find({ sound: { $in: soundsPosted } });
+          await Comment.deleteMany({ _id: { $in: commentsOnSoundsPosted } });
+
           Sound.deleteMany({ user: user._id }, function (err) {
             if (err) {
               return next(err);
