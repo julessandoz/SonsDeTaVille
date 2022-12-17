@@ -43,28 +43,35 @@ export function tokenToUser(token) {
  * @apiBody {String} email Email address of the user
  * @apiBody {String} password Password of the user
  * @apiSuccess {String} token JWT token
+ * @apiSuccess {Object} user User object
  * @apiSuccessExample {json} Success
  * HTTP/1.1 200 OK
  * {
  * token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+ * user: {
+ *  "_id": "5f7b5b0b0b5b5b0b0b5b5b0b",
+ *  "username": "John Doe",
+ *  "email": "john@doe.com",
+ *  "_v": 0
+ *  "role": "user"
  * }
  */
   router.post("/login", function(req, res, next) {
     // Find the user by name.
     User.findOne({ email: req.body.email }).exec(function(err, user) {
       if (err) { return next(err); }
-      else if (!user) { return res.sendStatus(401); }
+      else if (!user) { return res.status(401).send("Bad login"); }
       // Validate the password.
       bcrypt.compare(req.body.password, user.password, function(err, valid) {
         if (err) { return next(err); }
-        else if (!valid) { return res.sendStatus(401); }
+        else if (!valid) { return res.status(401).send("Bad login"); }
         // Generate a valid JWT which expires in 7 days.
         const exp = Math.floor(Date.now() / 1000) + 7 * 24 * 3600;
         const role = user.admin ? "admin" : "user";
         const payload = { sub: user._id.toString(), exp: exp, scope: role };
         jwt.sign(payload, secretKey, function(err, token) {
           if (err) { return next(err); }
-          res.send({ token: token }); // Send the token to the client.
+          res.send({ token: token, user: user }); // Send the token to the client.
         });
       });
     })
