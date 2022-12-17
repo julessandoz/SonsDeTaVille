@@ -30,7 +30,9 @@ router.options("/", authenticate, function (req, res, next) {
  * @apiName GetSounds
  * @apiGroup Sounds
  * @apiDescription Get all sounds
- * @apiParam {Object} [location] Location object ({"lat": 46.78123, "lng": 6.64731, "radius": 1000}) radius is in meters and optional
+ * @apiParam {String} [lat] Latitude
+ * @apiParam {String} [lng] Longitude
+ * @apiParam {String} [rad] Radius in meters
  * @apiParam {String} [category] Category id
  * @apiParam {String} [user] Username
  * @apiParam {Date} [date] Date (sounds posted since this date) (ISO 8601)
@@ -85,8 +87,17 @@ router.get("/", authenticate, function (req, res, next) {
   if (req.query.offset) {
     offset = req.query.offset;
   }
-  if (req.query.location) {
-    let location = JSON.parse(req.query.location);
+  if (req.query.lat || req.query.lng) {
+    if (!req.query.lng || !req.query.lat) {
+      err = new Error("Missing location");
+      err.status = 400;
+      return next(err);
+    }
+      let location = {
+        lat: req.query.lat,
+        lng: req.query.lng,
+        radius: req.query.rad,
+      };
     const maxRadius = 50000;
     const minRadius = 500;
     location.radius = location.radius ? location.radius : maxRadius;
@@ -202,7 +213,8 @@ router.get("/", authenticate, function (req, res, next) {
  * @apiName CreateSound
  * @apiGroup Sounds
  * @apiBody {String} category Category of the sound
- * @apiBody {String} location Location of the sound Format: {"lat": 0, "lng": 0}
+ * @apiBody {String} lat Latitude of the sound
+ * @apiBody {String} lng Longitude of the sound
  * @apiBody {File} uploaded_audio File of the sound
  * @apiSuccess {String} Message Sound successfully created
  * @apiSuccessExample {text} Saved sound
@@ -215,8 +227,13 @@ router.post(
   upload.single("uploaded_audio"),
   authenticate,
   function (req, res, next) {
-    const location = JSON.parse(req.body.location);
-    const { lat, lng } = location;
+    const lat = req.body.lat;
+    const lng = req.body.lng;
+    if (!lat || !lng) {
+      err = new Error("Missing location");
+      err.status = 400;
+      return next(err);
+    }
     Category.findOne({ name: req.body.category }, function (err, cat) {
       if (err || !cat) {
         if (!cat) {
@@ -240,7 +257,9 @@ router.post(
         if (err) {
           return next(err);
         }
-        res.status(201).send("Sound saved successfully");
+        res.status(201).send(
+          `Sound successfully created
+           Sound id: ${savedSound._id}`);
       });
     });
   }
@@ -344,7 +363,7 @@ router.patch("/:id", authenticate, function (req, res, next) {
       }
 
       if (user._id == req.currentUserId || req.currentUserRole === "admin") {
-        Category.findOne({ name: req.body.category }, function (err, cat) {
+        Category.findOne({ name: req.body.category }, async function (err, cat) {
           if (err || !cat) {
             if (!cat) {
               err = new Error("Category not found");
@@ -352,12 +371,10 @@ router.patch("/:id", authenticate, function (req, res, next) {
             }
             return next(err);
           }
-          sound.save(function (err, savedSound) {
-            if (err) {
-              return next(err);
-            }
-            res.send("Sound updated successfully");
-          });
+          sound.category = cat._id;
+          const updatedSound = await Sound.findByIdAndUpdate(sound._id, {category: cat._id}, {new: true})
+          res.status(200).send(`Sound updated successfully
+           Sound id: ${updatedSound._id}`);
         });
       } else {
         return res
@@ -390,7 +407,7 @@ router.patch("/:id", authenticate, function (req, res, next) {
  * }
  */
 router.delete("/:id", authenticate, function (req, res, next) {
-  const soundToDelete = Sound.findById(req.params.id, function (err, sound) {
+  Sound.findById(req.params.id, function (err, sound) {
     if (err || !sound) {
       if (!sound) {
         err = new Error("Sound not found");
@@ -402,12 +419,19 @@ router.delete("/:id", authenticate, function (req, res, next) {
       if (err) {
         return next(err);
       }
+      
       if (user._id == req.currentUserId || req.currentUserRole === "admin") {
         Sound.findByIdAndDelete(req.params.id, function (err, sound) {
           if (err) {
             return next(err);
           }
-          res.status(204).send("Sound deleted successfully!");
+          // Delete all comments associated with the sound
+          Comment.deleteMany({ sound: sound._id }, function (err) {
+            if (err) {
+              return next(err);
+            }
+          });
+          res.status(200).send("Sound deleted successfully!");
         });
       } else {
         res.status(401).send("You are not authorized to delete this sound");
