@@ -11,7 +11,8 @@ export function createWSS(httpServer) {
   });
 
   wss.on("connection", async (ws, req) => {
-    const userId = tokenToUser(req.headers.authorization.split(" ")[1]);
+    try {
+      const userId = tokenToUser(req.headers.authorization.split(" ")[1]);
       clients.push({ userId: userId, ws: ws });
       ws.on("message", (message) => {
         ws.send("Received your message: " + message);
@@ -20,6 +21,9 @@ export function createWSS(httpServer) {
       ws.on("close", () => {
         clients.splice(clients.indexOf(ws), 1);
       });
+    } catch (error) {
+      ws.send("Error: " + error);
+    }
     });
   };
 

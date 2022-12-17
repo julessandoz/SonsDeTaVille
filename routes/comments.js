@@ -205,7 +205,7 @@ router.post("/", authenticate, function (req, res, next) {
           if (err) {
             return next(err);
           }
-          sendMessageToUser("New comment", user._id, "newNotification");
+          sendMessageToUser(`New Comment: SoundId: ${sound._id}, Comment: ${comment.comment}`, user._id, "newNotification");
         });
         res.status(201).send("Comment successfully created");
       });
