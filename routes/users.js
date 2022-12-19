@@ -127,7 +127,7 @@ router.get("/:username", authenticate, function (req, res, next) {
               soundsPosted: user.soundsPosted,
               commentsPosted: user.commentsPosted,
               email: user.email,
-              role: req.currentUserRole,
+              role: user.admin? "admin" : "user",
             });
           }
         );
