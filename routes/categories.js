@@ -112,7 +112,7 @@ router.post("/", authenticate, function (req, res, next) {
   if (req.currentUserRole != "admin") {
     return res.status(401).send("Unauthorized");
   }
-  const category = new Category({ name: req.body.name, color: req.body.color });
+  const category = new Category({ name: req.body.name, iconName: req.body.iconName });
   category.save(function (err, savedCategory) {
     if (err) {
       return next(err);
