@@ -26,14 +26,14 @@ router.options("/", function (req, res, next) {
  * @apiSuccess {Object[]} categories List of categories
  * @apiSuccess {String} categories._id Category id
  * @apiSuccess {String} categories.name Category name
- * @apiSuccess {String} categories.color Category color
+ * @apiSuccess {String} categories.iconName Category iconName
  * @apiSuccessExample {json} Success
  *  HTTP/1.1 200 OK
  * [
  * {
  *  "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
  * "name": "Animaux",
- * "color": "red",
+ * "iconName": "paw",
  * "__v": 0
  * }
  * ]
@@ -65,7 +65,7 @@ router.get("/", authenticate, function (req, res, next) {
  * {
  *  "_id": "5f7b9b9b9b9b9b9b9b9b9b9b",
  * "name": "Animaux",
- * "color": "#ff0000",
+ * "iconName": "paw",
  * "__v": 0
  * }
  * ]
@@ -94,7 +94,7 @@ router.get("/:name", authenticate, function (req, res, next) {
  * @apiName CreateCategory
  * @apiGroup Categories
  * @apiBody {String} name Category name
- * @apiBody {String} color Category color
+ * @apiBody {String} iconName Category ionic icon name
  * @apiPermission admin
  * @apiSuccess {String} Message Category successfully created
  * @apiSuccessExample {json} Success
