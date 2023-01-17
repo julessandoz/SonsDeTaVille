@@ -150,10 +150,14 @@ router.get("/:username", authenticate, function (req, res, next) {
  * "password": "123456",
  * }
  * @apiSuccess {String} Message User successfully created
- * @apiSuccessExample {text} Success
+ * @apiSuccessExample {json} Success
  *  HTTP/1.1 201 Created
  * 
- * User successfully created Email: king@tendo.jp, Username: Bowser
+ * {
+ * "message": "User successfully created",
+ * "email": king@tendo.jp,
+ * "username": Bowser
+ * }
  */
 
 router.post("/", function (req, res, next) {
@@ -166,7 +170,11 @@ router.post("/", function (req, res, next) {
     if (err) {
       return next(err);
     }
-    res.status(201).send(`User successfully created: Email: ${savedUser.email}, Username: ${savedUser.username}`);
+    res.status(201).send({
+      message: "User successfully created",
+      email: savedUser.email,
+      username: savedUser.username
+    });
   });
 });
 
