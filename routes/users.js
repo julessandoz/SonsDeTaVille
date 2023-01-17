@@ -244,8 +244,8 @@ router.patch("/:username", authenticate, async (req, res) => {
       const hashedPassword = await bcrypt.hash(req.body.password, config.bcryptFactor);
       update.password = hashedPassword;
     }
-
-    if (req.currentUserRole === "admin" || req.currentUserId == await User.findOne({ username: username })._id) {
+    const targetUser = await User.findOne({ username: username });
+    if (req.currentUserRole === "admin" || req.currentUserId == targetUser._id) {
       const user = await User.findOneAndUpdate(
         { username: username },
         update,
