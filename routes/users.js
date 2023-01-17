@@ -166,16 +166,37 @@ router.post("/", function (req, res, next) {
     email: req.body.email,
     clearPassword: req.body.password,
   });
-  user.save(function (err, savedUser) {
+  User.findOne({ username: user.username }, function (err, existingUser) {
     if (err) {
       return next(err);
     }
-    res.status(201).send({
-      message: "User successfully created",
-      email: savedUser.email,
-      username: savedUser.username
+    if (existingUser) {
+      err = new Error("Username is already taken");
+      err.status = 409;
+      return next(err);
+    }
+    User.findOne({ email: user.email }, function (err, existingUser) {
+      if (err) {
+        return next(err);
+      }
+      if (existingUser) {
+        err = new Error("Email is already taken");
+        err.status = 409;
+        return next(err);
+      }
+      user.save(function (err, savedUser) {
+        if (err) {
+          return next(err);
+        }
+        res.status(201).send({
+          message: "User successfully created",
+          email: savedUser.email,
+          username: savedUser.username
+        });
+      });
     });
-  });
+  
+});
 });
 
 /**
