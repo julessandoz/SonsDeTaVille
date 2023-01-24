@@ -317,7 +317,7 @@ router.get("/:id", authenticate, function (req, res, next) {
  *
  * Octet stream
  */
-router.get("/data/:id", authenticate, function (req, res, next) {
+router.get("/data/:id", /* authenticate, */ function (req, res, next) {
   Sound.findById(req.params.id, function (err, sound) {
     if (err || !sound) {
       if (!sound) {
