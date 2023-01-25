@@ -35,7 +35,7 @@ router.options("/", authenticate, function (req, res, next) {
  * @apiParam {String} [rad] Radius in meters
  * @apiParam {String} [category] Category id
  * @apiParam {String} [username] Username
- * @apiParam {String} [userId] User id
+ * @apiParam {String} [userId] User ID
  * @apiParam {Date} [date] Date (sounds posted since this date) (ISO 8601)
  * @apiParam {Number} [limit] Limit the number of results
  * @apiParam {Number} [offset] Skip the first n results
