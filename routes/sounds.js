@@ -34,13 +34,14 @@ router.options("/", authenticate, function (req, res, next) {
  * @apiParam {String} [lng] Longitude
  * @apiParam {String} [rad] Radius in meters
  * @apiParam {String} [category] Category id
- * @apiParam {String} [user] Username
+ * @apiParam {String} [username] Username
+ * @apiParam {String} [userId] User id
  * @apiParam {Date} [date] Date (sounds posted since this date) (ISO 8601)
  * @apiParam {Number} [limit] Limit the number of results
  * @apiParam {Number} [offset] Skip the first n results
  * @apiSuccess {Object[]} sounds List of sounds
  * @apiSuccess {String} sounds._id Sound id
- * @apiSuccess {String} sounds.user User id
+ * @apiSuccess {String} sounds.user User
  * @apiSuccess {Object} sounds.location Location
  * @apiSuccess {String} sounds.location.type Location type
  * @apiSuccess {Number[]} sounds.location.coordinates Location coordinates
@@ -66,10 +67,11 @@ router.options("/", authenticate, function (req, res, next) {
  *  }
  * ]
  */
-router.get("/", authenticate, function (req, res, next) {
+router.get("/", authenticate, async function (req, res, next) {
   let limit = 10;
   let offset = 0;
   let query = {};
+
   if (req.query.date) {
     if (!req.query.date.match(/^(\d{4})-(\d{2})-(\d{2})$/)) {
       return res.status(400).send("Invalid date");
@@ -87,17 +89,17 @@ router.get("/", authenticate, function (req, res, next) {
   if (req.query.offset) {
     offset = req.query.offset;
   }
-  if (req.query.lat || req.query.lng) {
+  if (req.query.lat || req.query.lng) {
     if (!req.query.lng || !req.query.lat) {
       err = new Error("Missing location");
       err.status = 400;
       return next(err);
     }
-      let location = {
-        lat: req.query.lat,
-        lng: req.query.lng,
-        radius: req.query.rad,
-      };
+    let location = {
+      lat: req.query.lat,
+      lng: req.query.lng,
+      radius: req.query.rad,
+    };
     const maxRadius = 50000;
     const minRadius = 500;
     location.radius = location.radius ? location.radius : maxRadius;
@@ -113,100 +115,47 @@ router.get("/", authenticate, function (req, res, next) {
       },
     };
   }
-
-  if (req.query.category) {
-    Category.findById(req.query.category, function (err, category) {
-      if (err || !category) {
-        if (!category) {
-          err = new Error("Category not found");
-          err.status = 404;
-        }
-        return next(err);
-      }
-      query.category = category._id;
-
-      if (req.query.username) {
-        User.findOne({ username: req.query.username }, function (err, user) {
-          if (err || !user) {
-            if (!user) {
-              err = new Error("User not found");
-              err.status = 404;
-            }
-            return next(err);
-          }
-          query.user = user._id;
-          Sound.find(query)
-            .limit(limit)
-            .skip(offset)
-            .sort({ date: -1 })
-            .populate("user")
-            .populate("category")
-            .populate("comments")
-            .exec(function (err, sounds) {
-              if (err) {
-                return next(err);
-              }
-              res.send(sounds);
-            });
-        });
-      } else {
-        Sound.find(query)
-          .limit(limit)
-          .skip(offset)
-          .sort({ date: -1 })
-          .populate("user")
-          .populate("category")
-          .populate("comments")
-          .exec(function (err, sounds) {
-            if (err) {
-              return next(err);
-            }
-            res.send(sounds);
-          });
-      }
-    });
-  } else {
-    if (req.query.username) {
-      User.findOne({ username: req.query.username }, function (err, user) {
-        if (err || !user) {
-          if (!user) {
-            err = new Error("User not found");
-            err.status = 404;
-          }
-          return next(err);
-        }
-        query.user = user._id;
-        Sound.find(query)
-          .limit(limit)
-          .skip(offset)
-          .sort({ date: -1 })
-          .populate("user")
-          .populate("category")
-          .populate("comments")
-          .exec(function (err, sounds) {
-            if (err) {
-              return next(err);
-            }
-            res.send(sounds);
-          });
-      });
-    } else {
-      Sound.find(query)
-        .limit(limit)
-        .skip(offset)
-        .sort({ date: -1 })
-        .populate("user")
-        .populate("category")
-        .populate("comments")
-        .exec(function (err, sounds) {
-          if (err) {
-            return next(err);
-          }
-          res.send(sounds);
-        });
+  try {
+    let user, category;
+    if (req.query.userId) {
+      user = await User.findOne({ _id: req.query.userId });
+    } else if (req.query.username) {
+      user = await User.findOne({ username: req.query.username });
     }
+    if (req.query.category) {
+      category = await Category.findById(req.query.category);
+    }
+    if (!user && !category) {
+      if(req.query.userId || req.query.username) {
+        return res.status(404).send("User not found");
+      }
+      if(req.query.category) {
+        return res.status(404).send("Category not found");
+      }
+    }
+    if (user) {
+      query.user = user._id;
+    }
+    if (category) {
+      query.category = category._id;
+    }
+    const sounds = await findSounds(query, limit, offset);
+    res.send(sounds);
+  } catch (err) {
+    return next(err);
   }
 });
+
+async function findSounds(query, limit, offset) {
+  return await Sound.find(query)
+    .limit(limit)
+    .skip(offset)
+    .sort({ date: -1 })
+    .populate("user")
+    .populate("category")
+    .populate("comments")
+    .exec();
+}
 
 /**
  * @api {post} /sounds Create a new sound
@@ -259,7 +208,8 @@ router.post(
         }
         res.status(201).send(
           `Sound successfully created
-           Sound id: ${savedSound._id}`);
+           Sound id: ${savedSound._id}`
+        );
       });
     });
   }
@@ -317,18 +267,21 @@ router.get("/:id", authenticate, function (req, res, next) {
  *
  * Octet stream
  */
-router.get("/data/:id", /* authenticate, */ function (req, res, next) {
-  Sound.findById(req.params.id, function (err, sound) {
-    if (err || !sound) {
-      if (!sound) {
-        err = new Error("Sound not found");
-        err.status = 404;
+router.get(
+  "/data/:id",
+  /* authenticate, */ function (req, res, next) {
+    Sound.findById(req.params.id, function (err, sound) {
+      if (err || !sound) {
+        if (!sound) {
+          err = new Error("Sound not found");
+          err.status = 404;
+        }
+        return next(err);
       }
-      return next(err);
-    }
-    res.send(sound.sound);
-  });
-});
+      res.send(sound.sound);
+    });
+  }
+);
 
 /**
  * @api {patch} /sounds/:id Update a sound's category by id
@@ -363,19 +316,26 @@ router.patch("/:id", authenticate, function (req, res, next) {
       }
 
       if (user._id == req.currentUserId || req.currentUserRole === "admin") {
-        Category.findOne({ name: req.body.category }, async function (err, cat) {
-          if (err || !cat) {
-            if (!cat) {
-              err = new Error("Category not found");
-              err.status = 404;
+        Category.findOne(
+          { name: req.body.category },
+          async function (err, cat) {
+            if (err || !cat) {
+              if (!cat) {
+                err = new Error("Category not found");
+                err.status = 404;
+              }
+              return next(err);
             }
-            return next(err);
-          }
-          sound.category = cat._id;
-          const updatedSound = await Sound.findByIdAndUpdate(sound._id, {category: cat._id}, {new: true})
-          res.status(200).send(`Sound updated successfully
+            sound.category = cat._id;
+            const updatedSound = await Sound.findByIdAndUpdate(
+              sound._id,
+              { category: cat._id },
+              { new: true }
+            );
+            res.status(200).send(`Sound updated successfully
            Sound id: ${updatedSound._id}`);
-        });
+          }
+        );
       } else {
         return res
           .status(401)
@@ -419,7 +379,7 @@ router.delete("/:id", authenticate, function (req, res, next) {
       if (err) {
         return next(err);
       }
-      
+
       if (user._id == req.currentUserId || req.currentUserRole === "admin") {
         Sound.findByIdAndDelete(req.params.id, function (err, sound) {
           if (err) {
