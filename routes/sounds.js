@@ -95,6 +95,7 @@ router.get("/", authenticate, async function (req, res, next) {
       err.status = 400;
       return next(err);
     }
+    console.log(req.query.lat, req.query.lng, req.query.rad)
     let location = {
       lat: req.query.lat,
       lng: req.query.lng,
@@ -139,7 +140,9 @@ router.get("/", authenticate, async function (req, res, next) {
     if (category) {
       query.category = category._id;
     }
+    console.log(query);
     const sounds = await findSounds(query, limit, offset);
+    console.log(sounds)
     res.send(sounds);
   } catch (err) {
     return next(err);
@@ -191,7 +194,6 @@ router.post(
         }
         return next(err);
       }
-      console.log(req.file);
       const sound = new Sound({
         location: {
           type: "Point",
