@@ -243,6 +243,7 @@ router.post(
 router.get("/:id", authenticate, function (req, res, next) {
   Sound.findById(req.params.id)
     .populate("user")
+    .populate("comments")
     .exec(function (err, sound) {
       if (err || !sound) {
         if (!sound) {
