@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 
 const User = mongoose.models.User;
 const Category = mongoose.models.Category;
+const Comment = mongoose.models.Comment;
 
 const router = express.Router();
 import multer from "multer";
@@ -375,6 +376,7 @@ router.patch("/:id", authenticate, function (req, res, next) {
  * }
  */
 router.delete("/:id", authenticate, function (req, res, next) {
+  let hasComments = false;
   Sound.findById(req.params.id, function (err, sound) {
     if (err || !sound) {
       if (!sound) {
@@ -383,22 +385,24 @@ router.delete("/:id", authenticate, function (req, res, next) {
       }
       return next(err);
     }
+    sound.comments.length > 0 ? (hasComments = true) : (hasComments = false);
     User.findById(sound.user, function (err, user) {
       if (err) {
         return next(err);
       }
 
       if (user._id == req.currentUserId || req.currentUserRole === "admin") {
-        Sound.findByIdAndDelete(req.params.id, function (err, sound) {
-          if (err) {
-            return next(err);
-          }
-          // Delete all comments associated with the sound
+        if (hasComments) {
           Comment.deleteMany({ sound: sound._id }, function (err) {
             if (err) {
               return next(err);
             }
           });
+        }
+        Sound.findByIdAndDelete(req.params.id, function (err, sound) {
+          if (err) {
+            return next(err);
+          }
           res.status(200).send("Sound deleted successfully!");
         });
       } else {
