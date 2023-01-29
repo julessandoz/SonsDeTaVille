@@ -243,6 +243,7 @@ router.post(
 router.get("/:id", authenticate, function (req, res, next) {
   Sound.findById(req.params.id)
     .populate("user")
+    .populate("category")
     .populate([{
       path: "comments",
       model: "Comment",
