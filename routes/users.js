@@ -78,6 +78,7 @@ router.get("/", authenticate, function (req, res, next) {
  */
 
 router.get("/:username", authenticate, function (req, res, next) {
+  console.log(req.params)
   User.findOne({ username: req.params.username }, function (err, user) {
     if (err || !user) {
       if (!user) {
@@ -137,7 +138,7 @@ router.get("/:username", authenticate, function (req, res, next) {
 });
 
 /**
- * @api {get} /users/:id Find a user by id
+ * @api {get} /users/id/:id Find a user by id
  * @apiGroup Users
  * @apiName FindUserById
  * @apiParam {String {required}} id User id
@@ -155,7 +156,8 @@ router.get("/:username", authenticate, function (req, res, next) {
  * }
  * 
 **/
-router.get("/:id", authenticate, function (req, res, next) {
+router.get("/id/:id", authenticate, function (req, res, next) {
+  console.log(42)
   User.findById(req.params.id, function (err, user) {
     if (err || !user) {
       if (!user) {
