@@ -137,6 +137,84 @@ router.get("/:username", authenticate, function (req, res, next) {
 });
 
 /**
+ * @api {get} /users/:id Find a user by id
+ * @apiGroup Users
+ * @apiName FindUserById
+ * @apiParam {String {required}} id User id
+ * @apiSuccess {String} _id User id
+ * @apiSuccess {String} username User username
+ * @apiSuccess {String} email User email
+ * @apiSuccessExample {json} Success
+ * HTTP/1.1 200 OK
+ * {
+ * "_id": "637202823dff67cbfc51a424",
+ * "username": "audreycks",
+ * "soundsPosted": 0,
+ * "commentsPosted": 0,
+ * "email": "audrey.csikos@heig-vd.ch"
+ * }
+ * 
+**/
+router.get("/:id", authenticate, function (req, res, next) {
+  User.findById(req.params.id, function (err, user) {
+    if (err || !user) {
+      if (!user) {
+        err = new Error("User not found");
+        err.status = 404;
+      }
+      return next(err);
+    }
+    let soundCount;
+    let commentCount;
+    Sound.aggregate(
+      [
+        { $match: { user: user._id } },
+        {
+          $group: {
+            _id: "$user",
+            count: { $sum: 1 },
+          },
+        },
+      ],
+      function (err, result) {
+        if (err) {
+          return next(err);
+        }
+        soundCount = result[0] ? result[0].count : 0;
+        Comment.aggregate(
+          [
+            { $match: { author: user._id } },
+            {
+              $group: {
+                _id: "$author",
+                count: { $sum: 1 },
+              },
+            },
+          ],
+          function (err, result) {
+            if (err) {
+              return next(err);
+            }
+            commentCount = result[0] ? result[0].count : 0;
+
+            user.soundsPosted = soundCount;
+            user.commentsPosted = commentCount;
+            res.send({
+              _id: user._id,
+              username: user.username,
+              soundsPosted: user.soundsPosted,
+              commentsPosted: user.commentsPosted,
+              email: user.email,
+              role: user.admin? "admin" : "user",
+            });
+          }
+        );
+      }
+    );
+  });
+});
+
+/**
  * @api {post} /users Create a new user
  * @apiGroup Users
  * @apiName CreateUser
