@@ -243,7 +243,14 @@ router.post(
 router.get("/:id", authenticate, function (req, res, next) {
   Sound.findById(req.params.id)
     .populate("user")
-    .populate("comments")
+    .populate([{
+      path: "comments",
+      model: "Comment",
+      populate: {
+        path: "author",
+        model: "User",
+      },
+    }])
     .exec(function (err, sound) {
       if (err || !sound) {
         if (!sound) {
